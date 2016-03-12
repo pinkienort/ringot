@@ -147,7 +147,6 @@ func (tv *tweetview) draw() {
 			continue
 		}
 		tweet := tweetstatus.Content
-		text := tweet.Text
 		favorited := tweet.Favorited
 		retweeted := tweet.Retweeted
 		retweetedBy := ""
@@ -157,6 +156,7 @@ func (tv *tweetview) draw() {
 			tweet = tweet.RetweetedStatus
 			labelColor = ColorPink
 		}
+		text := tweet.Text
 
 		x := 0
 		drawText(" ", x, y, ColorBackground, labelColor)
