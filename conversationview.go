@@ -85,6 +85,7 @@ func (cv *conversationview) loadTweet() {
 			t, err := api.GetTweet(id, nil)
 			if err != nil {
 				changeBufferState(fmt.Sprintf("Err:Load Tweet(ID:%d)", id))
+				break
 			}
 			cv.loadPreviousTweetCh <- &t
 			tweet = &t
