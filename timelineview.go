@@ -22,6 +22,7 @@ import (
 	"github.com/ChimeraCoder/anaconda"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 type timelineview struct {
@@ -57,7 +58,19 @@ func (tv *timelineview) loadTweet(sinceID int64) {
 		changeBufferState("Err:Loading")
 		return
 	}
-	changeBufferState(fmt.Sprintf("Load!(%d tweets)", len(timeline)))
+
+	mentionCount := 0
+	sn := "@" + user.ScreenName
+	for _, t := range timeline {
+		if strings.Contains(t.Text, sn) {
+			mentionCount++
+		}
+	}
+	if mentionCount > 0 {
+		changeBufferState(fmt.Sprintf("Load!(%d tweets, %d mentions)", len(timeline), mentionCount))
+	} else {
+		changeBufferState(fmt.Sprintf("Load!(%d tweets)", len(timeline)))
+	}
 	tv.loadNewTweetCh <- timeline
 }
 
