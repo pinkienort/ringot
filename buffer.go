@@ -33,7 +33,6 @@ type buffer struct {
 	content     []byte
 	cursorX     int
 	mode        string
-	user        UserConfig
 	process     func(string)
 	inputing    bool
 	confirm     bool
@@ -53,7 +52,7 @@ func (bf *buffer) draw() {
 	width, height := getTermSize()
 	fillLine(0, height-2, ColorGray2)
 
-	info := fmt.Sprintf("User:@%s [%s]", bf.user.ScreenName, bf.user.UserName)
+	info := fmt.Sprintf("User:@%s [%s]", user.ScreenName, user.UserName)
 	x := width - runewidth.StringWidth(info) - 1
 	drawText(info, x, height-2, ColorGreen, ColorGray2)
 

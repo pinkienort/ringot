@@ -43,6 +43,7 @@ var (
 	tweetmap   *TweetMap
 	termWidth  int
 	termHeight int
+	user       UserConfig
 )
 
 type cli struct {
@@ -65,10 +66,9 @@ func (cl *cli) run() {
 	anaconda.SetConsumerKey(ConsumerKey)
 	anaconda.SetConsumerSecret(ConsumerSecret)
 
-	userConfig := cl.setting()
+	user = cl.setting()
 
 	view := newView()
-	view.buffer.user = userConfig
 	stateCh = make(chan string)
 	tweetmap = newTweetMap()
 
