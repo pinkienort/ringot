@@ -37,6 +37,8 @@ type buffer struct {
 	inputing    bool
 	confirm     bool
 	confirmLock lock
+
+	linePosInfo int
 }
 
 func newBuffer() *buffer {
@@ -55,6 +57,10 @@ func (bf *buffer) draw() {
 	info := fmt.Sprintf("User:@%s [%s]", user.ScreenName, user.UserName)
 	x := width - runewidth.StringWidth(info) - 1
 	drawText(info, x, height-2, ColorGreen, ColorGray2)
+
+	info = fmt.Sprintf("L%d", bf.linePosInfo)
+	x -= runewidth.StringWidth(info) + 1
+	drawText(info, x, height-2, ColorWhite, ColorGray2)
 
 	x = 2
 	drawText(t, x, height-2, ColorYellow, ColorGray2)

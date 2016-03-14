@@ -151,12 +151,16 @@ func (view *view) refreshAll() {
 
 	switch view.getCurrentViewMode() {
 	case home:
+		view.buffer.linePosInfo = view.timelineview.cursorPosition + 1
 		view.timelineview.draw()
 	case mention:
+		view.buffer.linePosInfo = view.mentionview.cursorPosition + 1
 		view.mentionview.draw()
 	case conversation:
+		view.buffer.linePosInfo = view.conversationview.cursorPosition + 1
 		view.conversationview.draw()
 	case usertimeline:
+		view.buffer.linePosInfo = view.usertimelineview.cursorPosition + 1
 		view.usertimelineview.draw()
 	}
 	view.buffer.draw()
