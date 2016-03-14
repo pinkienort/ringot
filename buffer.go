@@ -27,16 +27,18 @@ import (
 const (
 	inputMode   = "*Input Mode*"
 	confirmText = "ok?[Enter/C-g]"
+	Margin      = 18
 )
 
 type buffer struct {
-	content     []byte
-	cursorX     int
-	mode        string
-	process     func(string)
-	inputing    bool
-	confirm     bool
-	confirmLock lock
+	content      []byte
+	cursorX      int
+	cursorOffset int
+	mode         string
+	process      func(string)
+	inputing     bool
+	confirm      bool
+	confirmLock  lock
 
 	linePosInfo int
 }
@@ -69,8 +71,9 @@ func (bf *buffer) draw() {
 	x++
 
 	// Draw lower line
-	drawText(string(bf.content), 0, height-1, ColorWhite, ColorBackground)
-	x = runewidth.StringWidth(string(bf.content))
+	con := string(bf.content[bf.cursorOffset:])
+	drawText(con, 0, height-1, ColorWhite, ColorBackground)
+	x = runewidth.StringWidth(con)
 	if bf.confirm {
 		x++
 		t := confirmText
@@ -106,6 +109,10 @@ func (bf *buffer) cursorMoveBackward() {
 	}
 	_, s := utf8.DecodeLastRune(bf.content[:bf.cursorX])
 	bf.cursorX -= s
+	if bf.cursorOffset > 0 && bf.cursorX <= bf.cursorOffset+Margin {
+		_, s := utf8.DecodeLastRune(bf.content[:bf.cursorOffset])
+		bf.cursorOffset -= s
+	}
 	return
 }
 
@@ -115,6 +122,12 @@ func (bf *buffer) cursorMoveForward() {
 	}
 	_, size := utf8.DecodeRune(bf.content[bf.cursorX:])
 	bf.cursorX += size
+	width, _ := getTermSize()
+	cw := runewidth.StringWidth(string(bf.content[bf.cursorOffset:bf.cursorX]))
+	if cw >= width-Margin {
+		_, size = utf8.DecodeRune(bf.content[bf.cursorOffset:])
+		bf.cursorOffset += size
+	}
 }
 
 func (bf *buffer) cursorMoveToTop() {
@@ -131,7 +144,7 @@ func (bf *buffer) updateCursorPosition() {
 		return
 	}
 	_, h := getTermSize()
-	x := runewidth.StringWidth(string(bf.content[:bf.cursorX]))
+	x := runewidth.StringWidth(string(bf.content[bf.cursorOffset:bf.cursorX]))
 	termbox.SetCursor(x, h-1)
 }
 
@@ -140,6 +153,7 @@ func (bf *buffer) setContent(s string) {
 	bf.content = make([]byte, len(b), 180)
 	copy(bf.content, b)
 	bf.cursorX = len(b)
+	bf.cursorOffset = 0
 }
 
 func (bf *buffer) setModeStr(m viewmode) {
