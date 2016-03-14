@@ -172,9 +172,17 @@ func generateLabelColorByUserID(id int64) termbox.Attribute {
 	return LabelColors[val]
 }
 
+var (
+	replacer = strings.NewReplacer(
+		"&amp;", "&",
+		"&lt;", "<",
+		"&gt;", ">")
+)
+
 func wrapTweets(tweets []anaconda.Tweet) []tweetstatus {
 	result := make([]tweetstatus, len(tweets))
 	for i := 0; i < len(tweets); i++ {
+		tweets[i].Text = replacer.Replace(tweets[i].Text)
 		for _, url := range tweets[i].Entities.Urls {
 			tweets[i].Text = strings.Replace(tweets[i].Text, url.Url, url.Display_url, -1)
 		}
