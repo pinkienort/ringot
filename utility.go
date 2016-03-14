@@ -105,12 +105,20 @@ func drawTextWithAutoNotice(str string, x int, y int, fg termbox.Attribute, bg t
 					backColor = ColorLowlight
 					bgChanging = true
 				}
-			} else if c == ' ' {
-				tc, s2 := utf8.DecodeRune(t[s:])
-				if tc == '#' {
-					foreColor = ColorBlue
-					fgChanging = true
-					tc, _ = utf8.DecodeRune(t[s+s2:])
+			} else {
+				found := false
+				s2 := 0
+				if c == ' ' {
+					var tc rune
+					tc, s2 = utf8.DecodeRune(t[s:])
+					if tc == '#' {
+						found = true
+					}
+				} else if c == '#' && pos == 0 {
+					found = true
+				}
+				if found {
+					tc, _ := utf8.DecodeRune(t[s+s2:])
 					if tc != ' ' {
 						foreColor = ColorBlue
 						fgChanging = true
