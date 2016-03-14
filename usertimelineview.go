@@ -29,6 +29,7 @@ import (
 type usertimelineview struct {
 	*tweetview
 	screenName string
+	cache      map[string][]tweetstatus
 
 	loading             lock
 	loadNewTweetCh      chan []anaconda.Tweet
@@ -38,15 +39,23 @@ type usertimelineview struct {
 func newUsertimelineview() *usertimelineview {
 	return &usertimelineview{
 		tweetview:           newTweetview(),
+		cache:               make(map[string][]tweetstatus),
 		loadNewTweetCh:      make(chan []anaconda.Tweet),
 		loadIntervalTweetCh: make(chan []anaconda.Tweet),
 	}
 }
 
 func (uv *usertimelineview) setUserScreenName(name string) {
-	if uv.screenName != name {
+	if name != uv.screenName {
+		// Store
+		uv.cache[uv.screenName] = uv.tweets
+
+		if c, ok := uv.cache[name]; ok {
+			uv.tweets = c
+		} else {
+			uv.tweets = []tweetstatus{tweetstatus{ReloadMark: true}}
+		}
 		uv.screenName = name
-		uv.tweets = []tweetstatus{tweetstatus{ReloadMark: true}}
 	}
 }
 
