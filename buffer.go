@@ -132,10 +132,17 @@ func (bf *buffer) cursorMoveForward() {
 
 func (bf *buffer) cursorMoveToTop() {
 	bf.cursorX = 0
+	bf.cursorOffset = 0
 }
 
 func (bf *buffer) cursorMoveToBottom() {
+	width, _ := getTermSize()
 	bf.cursorX = len(bf.content)
+	cw := runewidth.StringWidth(string(bf.content))
+	if cw >= width-Margin {
+		bf.cursorOffset = cw - (width - Margin)
+	}
+
 }
 
 func (bf *buffer) updateCursorPosition() {
