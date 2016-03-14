@@ -100,6 +100,7 @@ func (view *view) Loop() {
 			if ev.Type == termbox.EventResize {
 				setTermSize(ev.Width, ev.Height)
 				view.resetScrollAll()
+				view.buffer.updateCursorPosition()
 				view.refreshAll()
 			} else {
 				view.handleEvent(ev)
