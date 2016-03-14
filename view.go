@@ -229,6 +229,8 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 	case termbox.KeyCtrlD:
 		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
 			return
+		} else if view.usertimelineview.loading.isLocking() {
+			return
 		}
 		t := cursorPositionTweet.Content
 		if t.RetweetedStatus != nil {

@@ -103,6 +103,20 @@ func (uv *usertimelineview) loadIntervalTweet(maxID int64) {
 	uv.loadIntervalTweetCh <- timeline
 }
 
+func (uv *usertimelineview) addNewTweet(tss []tweetstatus) {
+	if tss[0].Content.User.ScreenName != uv.screenName {
+		return
+	}
+	uv.tweetview.addNewTweet(tss)
+}
+
+func (uv *usertimelineview) addIntervalTweet(tss []tweetstatus) {
+	if tss[0].Content.User.ScreenName != uv.screenName {
+		return
+	}
+	uv.tweetview.addIntervalTweet(tss)
+}
+
 func (uv *usertimelineview) draw() {
 	tweets := uv.tweets
 	if len(tweets) == 0 || tweets[0].ReloadMark {
