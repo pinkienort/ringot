@@ -21,6 +21,7 @@ import (
 	"github.com/nsf/termbox-go"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -225,7 +226,7 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		view.conversationview.setTopTweet(tweetstatus{Content: t})
 		view.turnConversationviewMode()
 	case termbox.KeyCtrlS:
-		view.turnTweetMode()
+		view.turnInputMode()
 	case termbox.KeyCtrlW:
 		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
 			return
@@ -241,8 +242,7 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		if t.RetweetedStatus != nil {
 			t = t.RetweetedStatus
 		}
-		view.usertimelineview.setUserScreenName(t.User.ScreenName)
-		view.turnUserTimelineMode()
+		view.turnUserTimelineMode(t.User.ScreenName)
 	case termbox.KeyCtrlZ:
 		view.turnHomeTimelineMode()
 	case termbox.KeyCtrlX:
@@ -279,6 +279,13 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		}
 		for _, media := range cursorPositionTweet.Content.ExtendedEntities.Media {
 			go openMedia(media.Media_url_https)
+		}
+	default:
+		switch ev.Ch {
+		case 'x':
+			if ev.Mod&termbox.ModAlt != 0 {
+				view.turnCommandMode()
+			}
 		}
 	}
 }
@@ -320,7 +327,7 @@ func (view *view) handleInputMode(ev termbox.Event) {
 	case termbox.KeySpace:
 		view.buffer.insertRune(' ')
 	case termbox.KeyEsc, termbox.KeyCtrlG:
-		view.exitTweetMode()
+		view.exitInputMode()
 	case termbox.KeyBackspace, termbox.KeyBackspace2:
 		view.buffer.deleteRuneBackward()
 	case termbox.KeyCtrlA:
@@ -330,6 +337,10 @@ func (view *view) handleInputMode(ev termbox.Event) {
 	case termbox.KeyCtrlJ:
 		if len(view.buffer.content) != 0 {
 			view.turnConfirmMode()
+		}
+	case termbox.KeyEnter:
+		if view.buffer.commanding {
+			view.executeCommand(string(view.buffer.content))
 		}
 	default:
 		if ev.Ch != 0 {
@@ -397,6 +408,23 @@ func (view *view) sendNewTweet(status string) {
 		return
 	}
 	changeBufferState("Tweet!")
+}
+
+func (view *view) executeCommand(input string) {
+	view.exitInputMode()
+	splited := strings.SplitN(input, " ", 2)
+	if len(splited) < 2 {
+		view.buffer.setContent("Commnad Err")
+		return
+	}
+	cmd := splited[0]
+	args := strings.TrimPrefix(splited[1], " ")
+	switch cmd {
+	case "user":
+		view.turnUserTimelineMode(args)
+	default:
+		view.buffer.setContent("Commnad Err")
+	}
 }
 
 func (view *view) handleConversationMode(ev termbox.Event) {
@@ -467,7 +495,8 @@ func (view *view) turnConversationviewMode() {
 	go view.conversationview.loadTweet()
 }
 
-func (view *view) turnUserTimelineMode() {
+func (view *view) turnUserTimelineMode(screenName string) {
+	view.usertimelineview.setUserScreenName(screenName)
 	view.setViewMode(usertimeline)
 	view.buffer.setModeStr(usertimeline)
 	view.usertimelineview.cursorPosition = 0
@@ -482,7 +511,7 @@ func (view *view) turnUserTimelineMode() {
 
 }
 
-func (view *view) turnTweetMode() {
+func (view *view) turnInputMode() {
 	view.buffer.inputing = true
 	view.buffer.setContent("")
 	view.buffer.cursorMoveToTop()
@@ -521,8 +550,16 @@ func (view *view) turnConfirmMode() {
 	}()
 }
 
-func (view *view) exitTweetMode() {
+func (view *view) turnCommandMode() {
+	view.buffer.inputing = true
+	view.buffer.commanding = true
+	view.buffer.setContent("")
+	view.buffer.cursorMoveToBottom()
+}
+
+func (view *view) exitInputMode() {
 	view.buffer.inputing = false
+	view.buffer.commanding = false
 	view.buffer.process = nil
 	view.buffer.setModeStr(view.getCurrentViewMode())
 	view.buffer.setContent("")

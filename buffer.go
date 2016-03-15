@@ -26,6 +26,7 @@ import (
 
 const (
 	inputMode   = "*Input Mode*"
+	commandMode = "*Command Mode*"
 	confirmText = "ok?[Enter/C-g]"
 	Margin      = 18
 )
@@ -39,6 +40,7 @@ type buffer struct {
 	inputing     bool
 	confirm      bool
 	confirmLock  lock
+	commanding   bool
 
 	linePosInfo int
 }
@@ -50,7 +52,12 @@ func newBuffer() *buffer {
 func (bf *buffer) draw() {
 	t := bf.mode
 	if bf.inputing {
-		t = inputMode
+		if bf.commanding {
+			t = commandMode
+		} else {
+			t = inputMode
+		}
+
 	}
 	// Draw upper line
 	width, height := getTermSize()
@@ -72,6 +79,9 @@ func (bf *buffer) draw() {
 
 	// Draw lower line
 	con := string(bf.content[bf.cursorOffset:])
+	if bf.commanding {
+		con = ":" + con
+	}
 	drawText(con, 0, height-1, ColorWhite, ColorBackground)
 	x = runewidth.StringWidth(con)
 	if bf.confirm {
@@ -152,6 +162,9 @@ func (bf *buffer) updateCursorPosition() {
 	}
 	_, h := getTermSize()
 	x := runewidth.StringWidth(string(bf.content[bf.cursorOffset:bf.cursorX]))
+	if bf.commanding {
+		x++
+	}
 	termbox.SetCursor(x, h-1)
 }
 
