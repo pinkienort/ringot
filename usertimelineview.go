@@ -104,14 +104,14 @@ func (uv *usertimelineview) loadIntervalTweet(maxID int64) {
 }
 
 func (uv *usertimelineview) addNewTweet(tss []tweetstatus) {
-	if tss[0].Content.User.ScreenName != uv.screenName {
+	if len(tss) == 0 || tss[0].Content.User.ScreenName != uv.screenName {
 		return
 	}
 	uv.tweetview.addNewTweet(tss)
 }
 
 func (uv *usertimelineview) addIntervalTweet(tss []tweetstatus) {
-	if tss[0].Content.User.ScreenName != uv.screenName {
+	if len(tss) == 0 || tss[0].Content.User.ScreenName != uv.screenName {
 		return
 	}
 	uv.tweetview.addIntervalTweet(tss)
