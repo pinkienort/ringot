@@ -30,6 +30,7 @@ type view struct {
 	mentionview      *mentionview
 	conversationview *conversationview
 	usertimelineview *usertimelineview
+	listview         *listview
 	buffer           *buffer
 
 	modeHistory []viewmode
@@ -45,6 +46,7 @@ func newView() *view {
 	view.mentionview = newMentionview()
 	view.conversationview = newConversationview()
 	view.usertimelineview = newUsertimelineview()
+	view.listview = newListview()
 	view.buffer = newBuffer()
 	return view
 }
@@ -58,6 +60,7 @@ const (
 	usertimeline
 	mention
 	conversation
+	list
 )
 
 func (view *view) Init() {
@@ -135,6 +138,15 @@ func (view *view) Loop() {
 			tweetmap.registerTweets(tw)
 			view.usertimelineview.addIntervalTweet(wrapTweets(tw))
 			view.refreshAll()
+		case tw := <-view.listview.loadNewTweetCh:
+			tweetmap.registerTweets(tw)
+			t := wrapTweets(tw)
+			view.listview.addNewTweet(t)
+			view.refreshAll()
+		case tw := <-view.listview.loadIntervalTweetCh:
+			tweetmap.registerTweets(tw)
+			view.listview.addIntervalTweet(wrapTweets(tw))
+			view.refreshAll()
 		case state := <-stateCh:
 			if !view.buffer.inputing {
 				view.buffer.setContent(state)
@@ -164,6 +176,9 @@ func (view *view) refreshAll() {
 	case usertimeline:
 		view.buffer.linePosInfo = view.usertimelineview.cursorPosition + 1
 		view.usertimelineview.draw()
+	case list:
+		view.buffer.linePosInfo = view.listview.cursorPosition + 1
+		view.listview.draw()
 	}
 	view.buffer.draw()
 	termbox.Flush()
@@ -179,6 +194,7 @@ func (view *view) resetScrollAll() {
 	view.mentionview.resetScroll()
 	view.conversationview.resetScroll()
 	view.usertimelineview.resetScroll()
+	view.listview.resetScroll()
 }
 
 func (view *view) handleEvent(ev termbox.Event) {
@@ -199,6 +215,8 @@ func (view *view) handleEvent(ev termbox.Event) {
 		view.handleConversationMode(ev)
 	case usertimeline:
 		view.handleUserTimelineMode(ev)
+	case list:
+		view.handleListMode(ev)
 	}
 }
 
@@ -341,6 +359,9 @@ func (view *view) handleInputMode(ev termbox.Event) {
 	case termbox.KeyEnter:
 		if view.buffer.commanding {
 			view.executeCommand(string(view.buffer.content))
+			view.buffer.updateCursorPosition()
+			view.refreshAll()
+			return
 		}
 	default:
 		if ev.Ch != 0 {
@@ -418,10 +439,24 @@ func (view *view) executeCommand(input string) {
 		return
 	}
 	cmd := splited[0]
-	args := strings.TrimPrefix(splited[1], " ")
+	args := strings.TrimSuffix(strings.TrimPrefix(splited[1], " "), " ")
 	switch cmd {
 	case "user":
 		view.turnUserTimelineMode(args)
+	case "list":
+		resplited := strings.Split(args, "/")
+		var un, ln string
+		switch len(resplited) {
+		case 0:
+			return
+		case 1:
+			un = user.ScreenName
+			ln = resplited[0]
+		case 2:
+			un = resplited[0]
+			ln = resplited[1]
+		}
+		view.turnListModeWithName(un, ln)
 	default:
 		view.buffer.setContent("Commnad Err")
 	}
@@ -453,6 +488,25 @@ func (view *view) handleUserTimelineMode(ev termbox.Event) {
 			usertimelineview.tweets[0].Content.Id)
 	default:
 		view.handleCommonEvent(ev, view.usertimelineview.tweetview)
+	}
+
+	view.refreshAll()
+}
+
+func (view *view) handleListMode(ev termbox.Event) {
+	cursorPositionTweet := view.listview.
+		tweets[view.listview.cursorPosition]
+	switch ev.Key {
+	case termbox.KeyEnter, termbox.KeySpace:
+		if cursorPositionTweet.ReloadMark && view.listview.cursorPosition >= 1 {
+			go view.listview.loadIntervalTweet(view.listview.
+				tweets[view.listview.cursorPosition-1].Content.Id)
+		}
+	case termbox.KeyCtrlR:
+		go view.listview.loadTweet(view.
+			listview.tweets[0].Content.Id)
+	default:
+		view.handleCommonEvent(ev, view.listview.tweetview)
 	}
 
 	view.refreshAll()
@@ -507,6 +561,18 @@ func (view *view) turnUserTimelineMode(screenName string) {
 		go view.
 			usertimelineview.loadTweet(view.
 			usertimelineview.tweets[0].Content.Id)
+	}
+
+}
+
+func (view *view) turnListModeWithName(owner, name string) {
+	view.listview.setListName(owner, name)
+	view.setViewMode(list)
+	view.buffer.setModeStr(list)
+	view.listview.cursorPosition = 0
+	view.listview.scroll = 0
+	if view.listview.isEmpty() {
+		go view.listview.loadTweet(0)
 	}
 
 }
@@ -587,5 +653,8 @@ func (view *view) exitConversationviewMode() {
 	case usertimeline:
 		view.setViewMode(usertimeline)
 		view.buffer.setModeStr(usertimeline)
+	case list:
+		view.setViewMode(list)
+		view.buffer.setModeStr(list)
 	}
 }

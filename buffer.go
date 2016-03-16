@@ -187,6 +187,8 @@ func (bf *buffer) setModeStr(m viewmode) {
 		s = "*Conversation View*"
 	case usertimeline:
 		s = "*UserTimeline View*"
+	case list:
+		s = "*List View*"
 	}
 	bf.mode = s
 }
