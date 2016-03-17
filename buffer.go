@@ -33,6 +33,7 @@ const (
 
 type buffer struct {
 	content      []byte
+	state        string
 	cursorX      int
 	cursorOffset int
 	mode         string
@@ -85,17 +86,23 @@ func (bf *buffer) draw() {
 	x++
 
 	// Draw lower line
-	con := string(bf.content[bf.cursorOffset:])
-	if bf.commanding {
-		con = ":" + con
-	}
-	drawText(con, 0, height-1, ColorWhite, ColorBackground)
-	x = runewidth.StringWidth(con)
-	if bf.confirm {
-		x++
-		t := confirmText
-		drawText(t, x, height-1, ColorRed, ColorBackground)
-		x += runewidth.StringWidth(t)
+	x = 0
+	if bf.inputing {
+		con := string(bf.content[bf.cursorOffset:])
+		if bf.commanding {
+			con = ":" + con
+		}
+		drawText(con, 0, height-1, ColorWhite, ColorBackground)
+		x = runewidth.StringWidth(con)
+		if bf.confirm {
+			x++
+			t := confirmText
+			drawText(t, x, height-1, ColorRed, ColorBackground)
+			x += runewidth.StringWidth(t)
+		}
+	} else {
+		drawText(bf.state, x, height-1, ColorWhite, ColorBackground)
+		x += runewidth.StringWidth(bf.state)
 	}
 	fillLine(x, height-1, ColorBackground)
 }
@@ -181,6 +188,15 @@ func (bf *buffer) setContent(s string) {
 	copy(bf.content, b)
 	bf.cursorX = len(b)
 	bf.cursorOffset = 0
+}
+
+func (bf *buffer) setState(s string) {
+	bf.state = s
+}
+
+func (bf *buffer) clear() {
+	bf.setContent("")
+	bf.setState("")
 }
 
 func (bf *buffer) setModeStr(m viewmode) {

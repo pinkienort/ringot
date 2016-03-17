@@ -149,7 +149,7 @@ func (view *view) Loop() {
 			view.refreshAll()
 		case state := <-stateCh:
 			if !view.buffer.inputing {
-				view.buffer.setContent(state)
+				view.buffer.setState(state)
 				view.refreshBuffer()
 			}
 		}
@@ -435,7 +435,7 @@ func (view *view) executeCommand(input string) {
 	view.exitInputMode()
 	splited := strings.SplitN(input, " ", 2)
 	if len(splited) < 2 {
-		view.buffer.setContent("Commnad Err")
+		view.buffer.setState("Commnad Err")
 		return
 	}
 	cmd := splited[0]
@@ -458,7 +458,7 @@ func (view *view) executeCommand(input string) {
 		}
 		view.turnListModeWithName(un, ln)
 	default:
-		view.buffer.setContent("Commnad Err")
+		view.buffer.setState("Commnad Err")
 	}
 }
 
@@ -535,13 +535,13 @@ func (view *view) turnHomeTimelineMode() {
 }
 
 func (view *view) turnMentionviewMode() {
-	view.buffer.setContent("")
+	view.buffer.clear()
 	view.setViewMode(mention)
 	view.buffer.setModeStr(mention)
 }
 
 func (view *view) turnConversationviewMode() {
-	view.buffer.setContent("")
+	view.buffer.clear()
 	view.setViewMode(conversation)
 	view.buffer.setModeStr(conversation)
 	view.conversationview.cursorPosition = 0
@@ -579,7 +579,7 @@ func (view *view) turnListModeWithName(owner, name string) {
 
 func (view *view) turnInputMode() {
 	view.buffer.inputing = true
-	view.buffer.setContent("")
+	view.buffer.clear()
 	view.buffer.cursorMoveToTop()
 	view.buffer.updateCursorPosition()
 	view.buffer.process = view.sendNewTweet
@@ -619,7 +619,7 @@ func (view *view) turnConfirmMode() {
 func (view *view) turnCommandMode() {
 	view.buffer.inputing = true
 	view.buffer.commanding = true
-	view.buffer.setContent("")
+	view.buffer.clear()
 	view.buffer.cursorMoveToBottom()
 }
 
@@ -627,8 +627,8 @@ func (view *view) exitInputMode() {
 	view.buffer.inputing = false
 	view.buffer.commanding = false
 	view.buffer.process = nil
+	view.buffer.clear()
 	view.buffer.setModeStr(view.getCurrentViewMode())
-	view.buffer.setContent("")
 	view.buffer.cursorX = 0
 	termbox.HideCursor()
 }
@@ -637,8 +637,8 @@ func (view *view) exitConfirmMode() {
 	view.buffer.inputing = false
 	view.buffer.confirm = false
 	view.buffer.process = nil
+	view.buffer.clear()
 	view.buffer.setModeStr(view.getCurrentViewMode())
-	view.buffer.setContent("")
 	view.buffer.cursorX = 0
 }
 
