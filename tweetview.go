@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/mattn/go-runewidth"
+	"github.com/nsf/termbox-go"
 	"strings"
 	"time"
 )
@@ -151,8 +152,10 @@ func (tv *tweetview) draw() {
 		retweeted := tweet.Retweeted
 		retweetedBy := ""
 		labelColor := generateLabelColorByUserID(tweet.User.Id)
+		var retweetColor termbox.Attribute
 		if tweet.RetweetedStatus != nil {
 			retweetedBy = tweet.User.ScreenName
+			retweetColor = labelColor
 			tweet = tweet.RetweetedStatus
 			labelColor = ColorPink
 		}
@@ -177,7 +180,11 @@ func (tv *tweetview) draw() {
 			x += runewidth.StringWidth("RT") + 1
 		}
 		if retweetedBy != "" {
-			drawText("ReTweeted By @"+retweetedBy, x, y, ColorRed, bgColor)
+			t := "ReTweeted By "
+			drawText(t, x, y, ColorRed, bgColor)
+			x += runewidth.StringWidth(t)
+			t = "@" + retweetedBy
+			drawText(t, x, y, retweetColor, bgColor)
 		}
 		y++
 
