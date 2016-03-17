@@ -71,6 +71,13 @@ func (bf *buffer) draw() {
 	x -= runewidth.StringWidth(info) + 1
 	drawText(info, x, height-2, ColorWhite, ColorGray2)
 
+	clength := utf8.RuneCountInString(string(bf.content))
+	if bf.inputing && !bf.commanding && clength >= 20 {
+		info = fmt.Sprintf("length:(%d)", clength)
+		x -= runewidth.StringWidth(info) + 1
+		drawText(info, x, height-2, ColorWhite, ColorGray2)
+	}
+
 	x = 2
 	drawText(t, x, height-2, ColorYellow, ColorGray2)
 	x += runewidth.StringWidth(t)
