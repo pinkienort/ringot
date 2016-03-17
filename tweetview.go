@@ -115,6 +115,10 @@ func (tv *tweetview) addIntervalTweet(tss []tweetstatus) {
 	}
 }
 
+const (
+	reloadText = " ⟳ Reload"
+)
+
 func (tv *tweetview) draw() {
 	width, _ := getTermSize()
 	y := -(tv.scroll - tv.scrollOffset)
@@ -140,9 +144,9 @@ func (tv *tweetview) draw() {
 
 		if tweetstatus.ReloadMark {
 			if selected {
-				drawText(" ⟳ Reload", 0, y, ColorWhite, ColorGray1)
+				drawText(reloadText, 0, y, ColorWhite, ColorGray1)
 			} else {
-				drawText(" ⟳ Reload", 0, y, ColorWhite, bgColor)
+				drawText(reloadText, 0, y, ColorWhite, bgColor)
 			}
 			y++
 			continue
