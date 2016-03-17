@@ -143,6 +143,7 @@ func (uv *usertimelineview) draw() {
 
 	x := 0
 	y := 0
+	fillLine(0, y, ColorGray2)
 	text := fmt.Sprintf("@%s", user.ScreenName)
 	labelColor := generateLabelColorByUserID(user.Id)
 	drawText(text, 0, y, labelColor, ColorGray2)
@@ -157,24 +158,23 @@ func (uv *usertimelineview) draw() {
 		drawText(text, x, y, ColorWhite, ColorGray2)
 		x += runewidth.StringWidth(text)
 	}
-	fillLine(x, y, ColorGray2)
 	y++
 
+	fillLine(0, y, ColorGray2)
 	for _, t := range lines {
+		fillLine(0, y, ColorGray2)
 		drawText(t, 0, y, ColorWhite, ColorGray2)
 		x = runewidth.StringWidth(t)
-		fillLine(x, y, ColorGray2)
 		y++
 	}
 	x = 0
+	fillLine(0, y, ColorGray2)
 	if user.URL != "" {
 		text = "URL:" + user.URL
 	} else {
 		text = "URL:None"
 	}
 	drawText(text, x, y, ColorWhite, ColorGray2)
-	x += runewidth.StringWidth(text)
-	fillLine(x, y, ColorGray2)
 	y++
 
 	var ws int

@@ -140,14 +140,13 @@ func (lv *listview) draw() {
 	text := lv.list.FullName
 	x := 0
 	y := 0
+	fillLine(0, y, ColorGray2)
 	drawText(text, x, y, ColorWhite, ColorGray2)
-	x += runewidth.StringWidth(text)
-	fillLine(x, y, ColorGray2)
 	y++
 	for _, t := range lines {
+		fillLine(0, y, ColorGray2)
 		drawText(t, 0, y, ColorWhite, ColorGray2)
 		x = runewidth.StringWidth(t)
-		fillLine(x, y, ColorGray2)
 		y++
 	}
 }
