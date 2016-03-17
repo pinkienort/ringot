@@ -46,6 +46,7 @@ func newUsertimelineview() *usertimelineview {
 }
 
 func (uv *usertimelineview) setUserScreenName(name string) {
+	name = strings.ToLower(name)
 	if name != uv.screenName {
 		// Store
 		uv.cache[uv.screenName] = uv.tweets
@@ -104,14 +105,22 @@ func (uv *usertimelineview) loadIntervalTweet(maxID int64) {
 }
 
 func (uv *usertimelineview) addNewTweet(tss []tweetstatus) {
-	if len(tss) == 0 || tss[0].Content.User.ScreenName != uv.screenName {
+	if len(tss) == 0 {
+		return
+	}
+	s1, s2 := strings.ToLower(tss[0].Content.User.ScreenName), strings.ToLower(uv.screenName)
+	if s1 != s2 {
 		return
 	}
 	uv.tweetview.addNewTweet(tss)
 }
 
 func (uv *usertimelineview) addIntervalTweet(tss []tweetstatus) {
-	if len(tss) == 0 || tss[0].Content.User.ScreenName != uv.screenName {
+	if len(tss) == 0 {
+		return
+	}
+	s1, s2 := strings.ToLower(tss[0].Content.User.ScreenName), strings.ToLower(uv.screenName)
+	if s1 != s2 {
 		return
 	}
 	uv.tweetview.addIntervalTweet(tss)
