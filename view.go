@@ -298,6 +298,10 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		for _, media := range cursorPositionTweet.Content.ExtendedEntities.Media {
 			go openMedia(media.Media_url_https)
 		}
+	case termbox.KeyHome, termbox.KeyPgup:
+		tv.cursorMoveToTop()
+	case termbox.KeyEnd, termbox.KeyPgdn:
+		tv.cursorMoveToBottom()
 	default:
 		switch ev.Ch {
 		case 'x':

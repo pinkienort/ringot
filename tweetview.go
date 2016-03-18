@@ -82,6 +82,22 @@ func (tv *tweetview) cursorUp() {
 	}
 }
 
+func (tv *tweetview) cursorMoveToTop() {
+	tv.cursorPosition = 0
+	tv.scroll = 0
+}
+
+func (tv *tweetview) cursorMoveToBottom() {
+	_, height := getTermSize()
+	tv.cursorPosition = len(tv.tweets) - 1
+
+	sum := 0
+	for _, t := range tv.tweets {
+		sum += t.countLines()
+	}
+	tv.scroll = sum - (height - 2 - tv.scrollOffset)
+}
+
 func (tv *tweetview) addNewTweet(tss []tweetstatus) {
 	if len(tv.tweets) > 1 {
 		tv.scroll += sumTweetLines(tss)
