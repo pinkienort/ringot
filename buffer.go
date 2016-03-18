@@ -164,7 +164,14 @@ func (bf *buffer) cursorMoveToBottom() {
 	bf.cursorX = len(bf.content)
 	cw := runewidth.StringWidth(string(bf.content))
 	if cw >= width-Margin {
-		bf.cursorOffset = cw - (width - Margin)
+		for {
+			c := bf.content[bf.cursorOffset:]
+			if len(c) == 0 || runewidth.StringWidth(string(c)) < width-Margin {
+				break
+			}
+			_, size := utf8.DecodeRune(c)
+			bf.cursorOffset += size
+		}
 	}
 
 }
