@@ -136,7 +136,7 @@ const (
 )
 
 func (tv *tweetview) draw() {
-	width, _ := getTermSize()
+	width, height := getTermSize()
 	y := -(tv.scroll - tv.scrollOffset)
 
 	index := 0
@@ -147,7 +147,9 @@ func (tv *tweetview) draw() {
 	for ; index < len(tweets); index++ {
 		tweetstatus := tweets[index]
 		countLine := tweetstatus.countLines()
-		if y+countLine < 0 {
+		if y > height {
+			break
+		} else if y+countLine < 0 {
 			y += countLine
 			continue
 		}
