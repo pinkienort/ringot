@@ -30,6 +30,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -247,6 +248,7 @@ func (cl *cli) setting() UserConfig {
 		}
 	}
 	api = anaconda.NewTwitterApi(config.AccessToken, config.AccessTokenSecret)
+	api.HttpClient.Timeout = time.Second * 5
 	u, err := api.GetSelf(nil)
 	if err == nil {
 		config.ScreenName = u.ScreenName
