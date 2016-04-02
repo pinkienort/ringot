@@ -346,16 +346,22 @@ func (view *view) handleInputMode(ev termbox.Event) {
 		view.buffer.cursorMoveBackward()
 	case termbox.KeyArrowRight:
 		view.buffer.cursorMoveForward()
+	case termbox.KeyArrowUp:
+		view.buffer.cursorMoveUp()
+	case termbox.KeyArrowDown:
+		view.buffer.cursorMoveDown()
 	case termbox.KeySpace:
 		view.buffer.insertRune(' ')
 	case termbox.KeyEsc, termbox.KeyCtrlG:
 		view.exitInputMode()
+		view.refreshAll()
+		return
 	case termbox.KeyBackspace, termbox.KeyBackspace2:
 		view.buffer.deleteRuneBackward()
 	case termbox.KeyCtrlA:
-		view.buffer.cursorMoveToTop()
+		view.buffer.cursorMoveToLineTop()
 	case termbox.KeyCtrlE:
-		view.buffer.cursorMoveToBottom()
+		view.buffer.cursorMoveToLineBottom()
 	case termbox.KeyCtrlJ:
 		if len(view.buffer.content) != 0 {
 			view.turnConfirmMode()
@@ -366,6 +372,8 @@ func (view *view) handleInputMode(ev termbox.Event) {
 			view.buffer.updateCursorPosition()
 			view.refreshAll()
 			return
+		} else {
+			view.buffer.insertLF()
 		}
 	default:
 		if ev.Ch != 0 {
@@ -384,13 +392,13 @@ func (view *view) handleConfirmMode(ev termbox.Event) {
 	case termbox.KeyEsc, termbox.KeyCtrlG:
 		view.buffer.inputing = true
 		view.buffer.confirm = false
-		view.buffer.cursorMoveToBottom()
+		view.buffer.cursorMoveToLineBottom()
 		view.buffer.updateCursorPosition()
 	case termbox.KeyEnter:
 		go view.buffer.process(string(view.buffer.content))
 		view.exitConfirmMode()
 	}
-	view.refreshBuffer()
+	view.refreshAll()
 }
 
 func (view *view) handleMentionviewMode(ev termbox.Event) {
@@ -584,7 +592,7 @@ func (view *view) turnListModeWithName(owner, name string) {
 func (view *view) turnInputMode() {
 	view.buffer.inputing = true
 	view.buffer.clear()
-	view.buffer.cursorMoveToTop()
+	view.buffer.cursorMoveToLineTop()
 	view.buffer.updateCursorPosition()
 	view.buffer.process = view.sendNewTweet
 }
@@ -592,7 +600,8 @@ func (view *view) turnInputMode() {
 func (view *view) turnReplyMode(ts tweetstatus) {
 	view.buffer.inputing = true
 	view.buffer.setContent("@" + ts.Content.User.ScreenName + " ")
-	view.buffer.cursorMoveToBottom()
+	view.buffer.cursorMoveToLineBottom()
+	view.buffer.updateCursorPosition()
 	view.buffer.process = func(status string) {
 		if view.timelineview.loading.isLocking() || len(status) == 0 {
 			return
@@ -624,7 +633,7 @@ func (view *view) turnCommandMode() {
 	view.buffer.inputing = true
 	view.buffer.commanding = true
 	view.buffer.clear()
-	view.buffer.cursorMoveToBottom()
+	view.buffer.cursorMoveToLineBottom()
 }
 
 func (view *view) exitInputMode() {

@@ -116,7 +116,7 @@ func TestBufferCursor(t *testing.T) {
 		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
 	}
 
-	buffer.cursorMoveToBottom()
+	buffer.cursorMoveToLineBottom()
 	buffer.insertRune('!')
 	buffer.cursorMoveBackward()
 	buffer.deleteRuneBackward()
@@ -128,6 +128,90 @@ func TestBufferCursor(t *testing.T) {
 		t.Fatalf("Expected %v(%s), but %v(%s)", expected, string(expected), val, string(val))
 	}
 	expected = []byte("あめんぼあかいな愛うえ尾")
+	if buffer.cursorX != len(expected) {
+		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
+	}
+}
+
+func TestBufferMultiLine(t *testing.T) {
+	var val, expected []byte
+	initialize()
+	buffer := newBuffer()
+	buffer.insertRune('あ')
+	buffer.insertRune('a')
+	buffer.insertRune('い')
+	buffer.insertLF()
+	buffer.cursorMoveUp()
+	buffer.insertRune('う')
+
+	expected = []byte("うあaい\n")
+	val = buffer.content
+	if !reflect.DeepEqual(val, expected) {
+		t.Fatalf("Expected %v(%s), but %v(%s)", expected, string(expected), val, string(val))
+	}
+	expected = []byte("う")
+	if buffer.cursorX != len(expected) {
+		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
+	}
+
+	buffer.cursorMoveDown()
+	buffer.insertRune('え')
+	buffer.insertRune('お')
+	expected = []byte("うあaい\nえお")
+	val = buffer.content
+	if !reflect.DeepEqual(val, expected) {
+		t.Fatalf("Expected %v(%s), but %v(%s)", expected, string(expected), val, string(val))
+	}
+	expected = []byte("うあaい\nえお")
+	if buffer.cursorX != len(expected) {
+		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
+	}
+
+	buffer.cursorMoveBackward()
+	buffer.cursorMoveBackward()
+	buffer.insertRune('b')
+	expected = []byte("うあaい\nbえお")
+	val = buffer.content
+	if !reflect.DeepEqual(val, expected) {
+		t.Fatalf("Expected %v(%s), but %v(%s)", expected, string(expected), val, string(val))
+	}
+	expected = []byte("うあaい\nb")
+	if buffer.cursorX != len(expected) {
+		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
+	}
+
+	buffer.insertRune('c')
+	expected = []byte("うあaい\nbcえお")
+	val = buffer.content
+	if !reflect.DeepEqual(val, expected) {
+		t.Fatalf("Expected %v(%s), but %v(%s)", expected, string(expected), val, string(val))
+	}
+	expected = []byte("うあaい\nbc")
+	if buffer.cursorX != len(expected) {
+		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
+	}
+
+	buffer.cursorMoveUp()
+	buffer.insertRune('か')
+	buffer.insertRune('d')
+	expected = []byte("うかdあaい\nbcえお")
+	val = buffer.content
+	if !reflect.DeepEqual(val, expected) {
+		t.Fatalf("Expected %v(%s), but %v(%s)", expected, string(expected), val, string(val))
+	}
+	expected = []byte("うかd")
+	if buffer.cursorX != len(expected) {
+		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
+	}
+
+	buffer.cursorMoveDown()
+	buffer.insertRune('e')
+	expected = []byte("うかdあaい\nbcえeお")
+	val = buffer.content
+	if !reflect.DeepEqual(val, expected) {
+		t.Fatalf("Expected %v(%s), but %v(%s)", expected, string(expected), val, string(val))
+	}
+	expected = []byte("うかdあaい\nbcえe")
 	if buffer.cursorX != len(expected) {
 		t.Fatalf("buffer.cursorX is wrong, Expected %v, but %v", len(expected), buffer.cursorX)
 	}
