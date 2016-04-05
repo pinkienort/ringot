@@ -127,7 +127,7 @@ func (view *view) Loop() {
 			view.refreshAll()
 		case tw := <-view.conversationview.loadPreviousTweetCh:
 			tweetmap.registerTweet(tw)
-			view.conversationview.addPreviousTweet(tweetstatus{Content: tw})
+			view.conversationview.addPreviousTweet(wrapTweet(tw))
 			view.refreshAll()
 		case tw := <-view.usertimelineview.loadNewTweetCh:
 			tweetmap.registerTweets(tw)

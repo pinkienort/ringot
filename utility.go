@@ -190,16 +190,43 @@ var (
 func wrapTweets(tweets []anaconda.Tweet) []tweetstatus {
 	result := make([]tweetstatus, len(tweets))
 	for i := 0; i < len(tweets); i++ {
-		tweets[i].Text = replacer.Replace(tweets[i].Text)
-		for _, url := range tweets[i].Entities.Urls {
-			tweets[i].Text = strings.Replace(tweets[i].Text, url.Url, url.Display_url, -1)
+		tweet := &tweets[i]
+		for {
+			if tweet.RetweetedStatus != nil {
+				tweet = tweet.RetweetedStatus
+			} else {
+				break
+			}
 		}
-		for _, media := range tweets[i].ExtendedEntities.Media {
-			tweets[i].Text = strings.Replace(tweets[i].Text, media.Url, media.Display_url, -1)
+		tweet.Text = replacer.Replace(tweet.Text)
+		for _, url := range tweet.Entities.Urls {
+			tweet.Text = strings.Replace(tweet.Text, url.Url, url.Display_url, -1)
+		}
+		for _, media := range tweet.ExtendedEntities.Media {
+			tweet.Text = strings.Replace(tweet.Text, media.Url, media.Display_url, -1)
 		}
 		result[i] = tweetstatus{Content: &tweets[i]}
 	}
 	return result
+}
+
+func wrapTweet(t *anaconda.Tweet) tweetstatus {
+	tweet := t
+	for {
+		if tweet.RetweetedStatus != nil {
+			tweet = tweet.RetweetedStatus
+		} else {
+			break
+		}
+	}
+	tweet.Text = replacer.Replace(tweet.Text)
+	for _, url := range tweet.Entities.Urls {
+		tweet.Text = strings.Replace(tweet.Text, url.Url, url.Display_url, -1)
+	}
+	for _, media := range tweet.ExtendedEntities.Media {
+		tweet.Text = strings.Replace(tweet.Text, media.Url, media.Display_url, -1)
+	}
+	return tweetstatus{Content: t}
 }
 
 func sumTweetLines(tweetsStatusSlice []tweetstatus) int {
