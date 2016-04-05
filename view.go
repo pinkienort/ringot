@@ -496,8 +496,14 @@ func (view *view) handleUserTimelineMode(ev termbox.Event) {
 				tweets[view.usertimelineview.cursorPosition-1].Content.Id)
 		}
 	case termbox.KeyCtrlR:
-		go view.usertimelineview.loadTweet(view.
-			usertimelineview.tweets[0].Content.Id)
+		if !view.usertimelineview.loading.isLocking() {
+			if !view.usertimelineview.isEmpty() {
+				go view.usertimelineview.loadTweet(view.
+					usertimelineview.tweets[0].Content.Id)
+			} else {
+				go view.usertimelineview.loadTweet(0)
+			}
+		}
 	default:
 		view.handleCommonEvent(ev, view.usertimelineview.tweetview)
 	}
