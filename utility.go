@@ -268,7 +268,7 @@ func downloadMedia(url string) (fullpath string, err error) {
 		return "", err
 	}
 	if res.StatusCode != 200 {
-		errors.New(res.Status)
+		return "", errors.New(res.Status)
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -294,7 +294,6 @@ func openMedia(url string) {
 	fullpath, err := downloadMedia(url)
 	if err != nil && err != os.ErrExist {
 		panic(err)
-		return
 	}
 	openCommand(fullpath)
 }
