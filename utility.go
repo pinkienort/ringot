@@ -291,6 +291,11 @@ func downloadMedia(url string) (fullpath string, err error) {
 }
 
 func openMedia(url string) {
+	defer func() {
+		if err := recover(); err != nil {
+			changeBufferState("Media Download Err")
+		}
+	}()
 	fullpath, err := downloadMedia(url)
 	if err != nil && err != os.ErrExist {
 		panic(err)
