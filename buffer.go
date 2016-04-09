@@ -26,9 +26,10 @@ import (
 )
 
 const (
-	inputMode   = "*Input Mode*"
-	commandMode = "*Command Mode*"
-	confirmText = "ok?[Enter/C-g]"
+	inputMode       = "*Input Mode*"
+	commandMode     = "*Command Mode*"
+	confirmText     = "ok?[Enter/C-g]"
+	inputAreaMargin = 10
 )
 
 type buffer struct {
@@ -88,7 +89,7 @@ func (bf *buffer) drawTweetInputArea() {
 	// Draw Input Area
 	x = 0
 	text := string(bf.content)
-	lines := strings.Split(runewidth.Wrap(text, width), "\n")
+	lines := strings.Split(runewidth.Wrap(text, width-inputAreaMargin), "\n")
 
 	for i := 0; i < 4; i++ {
 		if i >= len(lines) {
@@ -379,7 +380,7 @@ func (bf *buffer) updateCursorPosition() {
 		termbox.SetCursor(x, h-1)
 	} else {
 		text := string(bf.content[:bf.cursorX])
-		lines := strings.Split(runewidth.Wrap(text, w), "\n")
+		lines := strings.Split(runewidth.Wrap(text, w-inputAreaMargin), "\n")
 		x := runewidth.StringWidth(lines[len(lines)-1])
 		if x == w {
 			termbox.SetCursor(0, h-4+len(lines))
