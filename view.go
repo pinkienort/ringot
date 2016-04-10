@@ -295,8 +295,12 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
 			return
 		}
+		urls := make([]string, 0)
 		for _, media := range cursorPositionTweet.Content.ExtendedEntities.Media {
-			go openMedia(media.Media_url_https)
+			urls = append(urls, media.Media_url_https)
+		}
+		if len(urls) > 0 {
+			go openMedia(urls)
 		}
 	case termbox.KeyHome, termbox.KeyPgup:
 		tv.cursorMoveToTop()

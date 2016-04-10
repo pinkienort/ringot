@@ -33,6 +33,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 	"unicode/utf8"
 )
 
@@ -256,51 +257,62 @@ const (
 	tempDir = "ringot"
 )
 
-func downloadMedia(url string) (fullpath string, err error) {
-	_, filename := path.Split(url)
-	fullpath = filepath.Join(os.TempDir(), tempDir, filename)
-	if _, err := os.Stat(fullpath); err == nil {
-		return fullpath, os.ErrExist
+func downloadMedia(url string, filefullpath string, wg *sync.WaitGroup) {
+	defer func() {
+		if err := recover(); err != nil {
+			changeBufferState("Media Download Err")
+		}
+		wg.Done()
+	}()
+	if _, err := os.Stat(filefullpath); err == nil {
+		return
 	}
 
 	res, err := http.Get(url)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	if res.StatusCode != 200 {
-		return "", errors.New(res.Status)
+		panic(errors.New(res.Status))
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	tempdir := filepath.Join(os.TempDir(), tempDir)
 	if _, err := os.Stat(tempdir); err != nil {
 		err := os.Mkdir(tempdir, 0775)
 		if err != nil {
-			return "", err
+			panic(err)
 		}
 	}
-	file, err := os.OpenFile(fullpath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0664)
+	file, err := os.OpenFile(filefullpath, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0664)
 	if err != nil {
-		return "", err
+		panic(err)
 	}
 	defer file.Close()
 	file.Write(body)
-	return fullpath, nil
 }
 
-func openMedia(url string) {
-	defer func() {
-		if err := recover(); err != nil {
-			changeBufferState("Media Download Err")
-		}
-	}()
-	fullpath, err := downloadMedia(url)
-	if err != nil && err != os.ErrExist {
-		panic(err)
+func openMedia(urls []string) {
+	wg := new(sync.WaitGroup)
+	fileps := make([]string, 0)
+	for _, url := range urls {
+		_, filename := path.Split(url)
+		filefullpath := filepath.Join(os.TempDir(), tempDir, filename)
+		fileps = append(fileps, filefullpath)
+		wg.Add(1)
+		go downloadMedia(url, filefullpath, wg)
 	}
-	openCommand(fullpath)
+	wg.Wait()
+
+	// Reverse
+	for i := len(fileps) - 1; i >= 0; i-- {
+		if _, err := os.Stat(fileps[i]); err == nil {
+			openCommand(fileps[i])
+		}
+		time.Sleep(time.Millisecond)
+	}
 }
 
 func favoriteTweet(id int64) {
