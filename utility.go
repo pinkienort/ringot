@@ -260,7 +260,7 @@ func downloadMedia(url string) (fullpath string, err error) {
 	_, filename := path.Split(url)
 	fullpath = filepath.Join(os.TempDir(), tempDir, filename)
 	if _, err := os.Stat(fullpath); err == nil {
-		return "", os.ErrExist
+		return fullpath, os.ErrExist
 	}
 
 	res, err := http.Get(url)
