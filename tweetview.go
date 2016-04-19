@@ -287,6 +287,9 @@ type tweetstatus struct {
 	Content    *anaconda.Tweet
 	ReloadMark bool
 	Empty      bool
+
+	pWidth     int
+	cacheCount int
 }
 
 func (status *tweetstatus) countLines() int {
@@ -296,6 +299,9 @@ func (status *tweetstatus) countLines() int {
 		return 1
 	}
 	w, _ := getTermSize()
+	if w == status.pWidth {
+		return status.cacheCount
+	}
 	tweet := status.Content
 	if tweet.RetweetedStatus != nil {
 		tweet = tweet.RetweetedStatus
@@ -303,6 +309,10 @@ func (status *tweetstatus) countLines() int {
 	text := tweet.Text
 	lines := strings.Split(runewidth.Wrap(text, w-2), "\n")
 	lineCount := 1 + len(lines) + 1
+
+	// Caching
+	status.pWidth = w
+	status.cacheCount = lineCount
 	return lineCount
 }
 
