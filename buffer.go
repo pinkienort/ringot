@@ -166,6 +166,11 @@ func (bf *buffer) runeUnderCursor() (rune, int) {
 }
 
 func (bf *buffer) insertRune(r rune) {
+	// Normally the limit of tweet length is 140,but considering
+	// some exceptions.(URL, etc...) set 180 to limit
+	if len(bf.content) > 180 && utf8.RuneCountInString(string(bf.content)) > 180 {
+		return
+	}
 	var u [utf8.UTFMax]byte
 	s := utf8.EncodeRune(u[:], r)
 	bf.content = byteSliceInsert(bf.content, u[:s], bf.cursorX)
