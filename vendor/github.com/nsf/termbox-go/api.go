@@ -444,6 +444,16 @@ func SetOutputMode(mode OutputMode) OutputMode {
 	return output_mode
 }
 
+// Sets the termbox disables ESC sequences.
+func SetDisableEscSequence(seqs []string) []string {
+	if seqs == nil {
+		return disable_sequences
+	}
+
+	disable_sequences = seqs
+	return disable_sequences
+}
+
 // Sync comes handy when something causes desync between termbox's understanding
 // of a terminal buffer and the reality. Such as a third party process. Sync
 // forces a complete resync between the termbox and a terminal, it may not be

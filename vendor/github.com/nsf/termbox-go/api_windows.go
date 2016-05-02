@@ -230,6 +230,14 @@ func SetOutputMode(mode OutputMode) OutputMode {
 	return OutputNormal
 }
 
+// Sets the termbox disables ESC sequences.
+//
+// Windows console does not support ESC sequences
+// so this will always do nothing and return nil
+func SetDisableEscSequence(seqs []string) []string {
+	return nil
+}
+
 // Sync comes handy when something causes desync between termbox's understanding
 // of a terminal buffer and the reality. Such as a third party process. Sync
 // forces a complete resync between the termbox and a terminal, it may not be

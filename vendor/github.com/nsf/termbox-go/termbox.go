@@ -43,8 +43,9 @@ type input_event struct {
 
 var (
 	// term specific sequences
-	keys  []string
-	funcs []string
+	keys              []string
+	funcs             []string
+	disable_sequences []string
 
 	// termbox inner state
 	orig_tios      syscall_Termios
@@ -412,6 +413,13 @@ func parse_mouse_event(event *Event, buf string) (int, bool) {
 
 func parse_escape_sequence(event *Event, buf []byte) (int, bool) {
 	bufstr := string(buf)
+
+	for _, seq := range disable_sequences {
+		if strings.HasPrefix(bufstr, seq) {
+			return len(seq), false
+		}
+	}
+
 	for i, key := range keys {
 		if strings.HasPrefix(bufstr, key) {
 			event.Ch = 0
