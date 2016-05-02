@@ -44,6 +44,13 @@ const (
 	CountTweet = 200
 )
 
+// DisableSequences
+var (
+	xtermOffSequences = []string{
+		"\x1b[1;5A", "\x1b[1;5B", "\x1b[1;5C", "\x1b[1;5D",
+	}
+)
+
 // Color Configuration
 const (
 	ColorBackground = termbox.ColorDefault

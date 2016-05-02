@@ -86,6 +86,11 @@ func (cl *cli) run() {
 	}()
 	termbox.SetOutputMode(termbox.Output256)
 	termbox.SetInputMode(termbox.InputAlt)
+
+	if os.Getenv("TERM") == "xterm" {
+		termbox.SetDisableEscSequence(xtermOffSequences)
+	}
+
 	setTermSize(termbox.Size())
 
 	drawText("Now Loading...", 0, 0, ColorWhite, ColorBackground)
