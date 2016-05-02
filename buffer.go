@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	inputMode       = "*Input Mode*"
+	inputMode       = "*Tweet Edit Mode*"
 	commandMode     = "*Command Mode*"
 	confirmText     = "ok?[Enter/C-g]"
 	inputAreaMargin = 10
