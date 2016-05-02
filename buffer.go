@@ -44,6 +44,7 @@ type buffer struct {
 	commanding  bool
 
 	linePosInfo int
+	clipboard   []byte
 }
 
 func newBuffer() *buffer {
@@ -368,6 +369,39 @@ func (bf *buffer) cursorMoveToLineBottom() {
 			x += LFByteSize
 		}
 		bf.cursorX = x
+	}
+}
+
+func (bf *buffer) cutToClipboard() {
+	if len(bf.content) == 0 {
+		return
+	}
+	lines := strings.Split(string(bf.content[:bf.cursorX]), "\n")
+	if len(lines) <= 1 {
+		src := bf.content[:bf.cursorX]
+		bf.clipboard = make([]byte, len(src))
+		copy(bf.clipboard, src)
+		bf.content = byteSliceRemove(bf.content, 0, bf.cursorX)
+		bf.cursorX -= len(bf.clipboard)
+		return
+	}
+	cx := 0
+	for i := 0; i < len(lines)-1; i++ {
+		cx += len([]byte(lines[i])) + LFByteSize
+	}
+	src := bf.content[cx:bf.cursorX]
+	bf.clipboard = make([]byte, len(src))
+	copy(bf.clipboard, src)
+	bf.content = byteSliceRemove(bf.content, cx, bf.cursorX)
+	bf.cursorX -= len(bf.clipboard)
+}
+
+func (bf *buffer) pasteFromClipboard() {
+	t := bf.clipboard
+	for len(t) > 0 {
+		r, s := utf8.DecodeRune(t)
+		bf.insertRune(r)
+		t = t[s:]
 	}
 }
 

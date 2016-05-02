@@ -366,6 +366,10 @@ func (view *view) handleInputMode(ev termbox.Event) {
 		view.buffer.cursorMoveToLineTop()
 	case termbox.KeyCtrlE:
 		view.buffer.cursorMoveToLineBottom()
+	case termbox.KeyCtrlW:
+		view.buffer.cutToClipboard()
+	case termbox.KeyCtrlY:
+		view.buffer.pasteFromClipboard()
 	case termbox.KeyCtrlJ:
 		if len(view.buffer.content) != 0 {
 			view.turnConfirmMode()
