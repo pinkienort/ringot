@@ -488,6 +488,10 @@ func (view *view) handleConversationMode(ev termbox.Event) {
 		view.exitConversationviewMode()
 	case termbox.KeyArrowRight:
 		// Do nothing
+	case termbox.KeyHome, termbox.KeyPgup:
+		// Disable
+	case termbox.KeyEnd, termbox.KeyPgdn:
+		// Disable
 	default:
 		view.handleCommonEvent(ev, view.conversationview.tweetview)
 	}
