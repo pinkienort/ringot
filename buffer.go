@@ -29,7 +29,7 @@ const (
 	inputMode       = "*Tweet Edit Mode*"
 	commandMode     = "*Command Mode*"
 	confirmText     = "ok?[Enter/C-g]"
-	inputAreaMargin = 10
+	inputAreaMargin = 1
 )
 
 type buffer struct {
@@ -95,11 +95,13 @@ func (bf *buffer) drawTweetInputArea() {
 	for i := 0; i < 4; i++ {
 		if i >= len(lines) {
 			fillLine(0, height-4+i, ColorBackground)
+			termbox.SetCell(width-1, height-4+i, ' ', ColorBackground, ColorBlack)
 			continue
 		}
 		drawText(lines[i], 0, height-4+i, ColorWhite, ColorBackground)
 		x = runewidth.StringWidth(lines[i])
 		fillLine(x, height-4+i, ColorBackground)
+		termbox.SetCell(width-1, height-4+i, ' ', ColorBackground, ColorBlack)
 	}
 
 }

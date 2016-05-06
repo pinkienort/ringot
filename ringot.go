@@ -64,6 +64,7 @@ const (
 	ColorGray2      = termbox.Attribute(0xe9 + 6)
 	ColorGray3      = termbox.Attribute(254)
 	ColorLowlight   = termbox.Attribute(240)
+	ColorBlack      = termbox.ColorBlack
 )
 
 // Label Colors Configuration
