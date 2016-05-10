@@ -235,8 +235,22 @@ func (tv *tweetview) draw() {
 		} else if sub <= time.Hour*36 {
 			h := sub / time.Hour
 			strTime = fmt.Sprintf("%d hours ago", h)
+		} else if sub <= time.Hour*24*14 {
+			d := (sub / (time.Hour * 24))
+			di := (sub % (time.Hour * 24))
+			// Round up if time of now is later than six o'clock
+			if now.Hour() >= 6 && di > 0 {
+				d++
+			}
+			strTime = fmt.Sprintf("%d/%d/%d %02d:%02d (%d days ago)",
+				createdAtTime.Year(), createdAtTime.Month(),
+				createdAtTime.Day(),
+				createdAtTime.Hour(), createdAtTime.Minute(), d)
 		} else {
-			strTime = fmt.Sprintf("%d/%d/%d", createdAtTime.Year(), createdAtTime.Month(), createdAtTime.Day())
+			strTime = fmt.Sprintf("%d/%d/%d %02d:%02d",
+				createdAtTime.Year(), createdAtTime.Month(),
+				createdAtTime.Day(),
+				createdAtTime.Hour(), createdAtTime.Minute())
 		}
 
 		drawText(" ", 0, y, ColorBackground, labelColor)
