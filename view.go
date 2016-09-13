@@ -222,93 +222,104 @@ func (view *view) handleEvent(ev termbox.Event) {
 
 func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 	cursorPositionTweet := tv.tweets[tv.cursorPosition]
-	switch ev.Key {
-	case termbox.KeyCtrlQ:
-		view.quit = true
-	case termbox.KeyArrowUp:
-		tv.cursorUp()
-	case termbox.KeyArrowDown:
-		tv.cursorDown()
-	case termbox.KeyArrowRight:
-		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark ||
-			cursorPositionTweet.Content == nil {
-			return
-		}
-		t := cursorPositionTweet.Content
-		if t.RetweetedStatus != nil {
-			t = t.RetweetedStatus
-		}
-		if t.InReplyToStatusID == 0 {
-			return
-		}
-		view.conversationview.setTopTweet(tweetstatus{Content: t})
-		view.turnConversationviewMode()
-	case termbox.KeyCtrlS:
-		view.turnInputMode()
-	case termbox.KeyCtrlW:
-		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
-			return
-		}
-		view.turnReplyMode(cursorPositionTweet)
-	case termbox.KeyCtrlD:
-		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
-			return
-		} else if view.usertimelineview.loading.isLocking() {
-			return
-		}
-		t := cursorPositionTweet.Content
-		if t.RetweetedStatus != nil {
-			t = t.RetweetedStatus
-		}
-		view.turnUserTimelineMode(t.User.ScreenName)
-	case termbox.KeyCtrlZ:
-		view.turnHomeTimelineMode()
-	case termbox.KeyCtrlX:
-		view.turnMentionviewMode()
-	case termbox.KeyCtrlF:
-		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
-			return
-		}
-		if !cursorPositionTweet.isFavorited() {
-			cursorPositionTweet.setFavorited(true)
-			go favoriteTweet(cursorPositionTweet.Content.Id)
-		} else {
-			cursorPositionTweet.setFavorited(false)
-			go unfavoriteTweet(cursorPositionTweet.Content.Id)
-		}
-	case termbox.KeyCtrlV:
-		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
-			return
-		}
-		if !cursorPositionTweet.isRetweeted() {
-			cursorPositionTweet.setRetweeted(true)
-			go retweet(cursorPositionTweet.Content.Id)
-		}
-	case termbox.KeyCtrlO:
-		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
-			return
-		}
-		for _, url := range cursorPositionTweet.Content.Entities.Urls {
-			go openCommand(url.Expanded_url)
-		}
-	case termbox.KeyCtrlP:
-		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
-			return
-		}
-		for _, media := range cursorPositionTweet.Content.ExtendedEntities.Media {
-			go openMedia(media.Media_url_https)
-		}
-	case termbox.KeyHome, termbox.KeyPgup:
-		tv.cursorMoveToTop()
-	case termbox.KeyEnd, termbox.KeyPgdn:
-		tv.cursorMoveToBottom()
-	default:
-		switch ev.Ch {
-		case 'x':
-			if ev.Mod&termbox.ModAlt != 0 {
-				view.turnCommandMode()
+	switch view.Action(ev) {
+		case ACT_NEXT_TWEET :
+			tv.cursorDown()
+		case ACT_PREVIOUS_TWEET :
+			tv.cursorUp()
+		case ACT_PAGE_DOWN :
+			for i := 0; i < 5; i++ { /* TODO: 画面内のツイート数に従って．*/
+				tv.cursorDown()		 /*		  実装する必要あり			  */
 			}
-		}
+		case ACT_PAGE_UP :
+			for i := 0; i < 5; i++ { /* TODO: pageDownと同様の問題		  */
+				tv.cursorUp()
+			}
+		case ACT_GO_INPUT_MODE :
+			view.turnInputMode()
+		case ACT_LIKE_TWEET :
+			if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
+				return
+			}
+			if !cursorPositionTweet.isFavorited() {
+				cursorPositionTweet.setFavorited(true)
+				go favoriteTweet(cursorPositionTweet.Content.Id)
+			} else {
+				cursorPositionTweet.setFavorited(false)
+				go unfavoriteTweet(cursorPositionTweet.Content.Id)
+			}
+		case ACT_RETWEET :
+			if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
+				return
+			}
+			if !cursorPositionTweet.isRetweeted() {
+				cursorPositionTweet.setRetweeted(true)
+				go retweet(cursorPositionTweet.Content.Id)
+			}
+		case ACT_GO_COMMAND_MODE :
+			view.turnCommandMode()
+		case ACT_QUIT :
+			view.quit = true
+		case ACT_GO_CONVERSATION_VIEW_MODE :
+			if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark ||
+				cursorPositionTweet.Content == nil {
+				return
+			}
+			t := cursorPositionTweet.Content
+			if t.RetweetedStatus != nil {
+				t = t.RetweetedStatus
+			}
+			if t.InReplyToStatusID == 0 {
+				return
+			}
+			view.conversationview.setTopTweet(tweetstatus{Content: t})
+			view.turnConversationviewMode()
+		case ACT_MENTION :
+			if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
+				return
+			}
+			view.turnReplyMode(cursorPositionTweet)
+		case ACT_GO_USER_TIMELINE_MODE :
+			if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
+				return
+			} else if view.usertimelineview.loading.isLocking() {
+				return
+			}
+			t := cursorPositionTweet.Content
+			if t.RetweetedStatus != nil {
+				t = t.RetweetedStatus
+			}
+			view.turnUserTimelineMode(t.User.ScreenName)
+		case ACT_GO_HOME_TIMELINE_MODE :
+			view.turnHomeTimelineMode()
+		case ACT_GO_MENTION_VIEW_MODE :
+			view.turnMentionviewMode()
+		case ACT_OPEN_URL :
+			if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
+				return
+			}
+			for _, url := range cursorPositionTweet.Content.Entities.Urls {
+				go openCommand(url.Expanded_url)
+			}
+		case ACT_OPEN_IMAGES :
+			if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
+				return
+			}
+			for _, media := range cursorPositionTweet.Content.ExtendedEntities.Media {
+				go openMedia(media.Media_url_https)
+			}
+		case ACT_LOAD_NEW_TWEETS :
+			tv.cursorMoveToTop()
+		// case termbox.KeyEnd, termbox.KeyPgdn:
+		// 	tv.cursorMoveToBottom()
+		default:
+			switch ev.Ch {
+			case 'x':
+				if ev.Mod&termbox.ModAlt != 0 {
+					view.turnCommandMode()
+				}
+>>>>>>> 8b597d6... Action(ev)
+			}
 	}
 }
 
