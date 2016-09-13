@@ -15,18 +15,15 @@ const (
 )
 
 type Action uint8
-
 type keybind struct {
+	Mod    termbox.Modifier
 	Key    termbox.Key
 	Ch     rune
 	Action Action
 }
 
-const NO_ACTION = 0xff - 1
-
-/* common event action list */
-const (
-	ACTION_LIKE_TWEET = iota
+const ( /* common event action list */
+	ACTION_LIKE_TWEET = iota + 1
 	ACTION_MENTION
 	ACTION_RETWEET
 	ACTION_OPEN_IMAGES
@@ -46,42 +43,12 @@ const (
 	ACTION_OPEN_URL
 	ACTION_SHOW_HELP
 )
-var commonKeybindList = []keybind {
-	{ termbox.KeyCtrlS		,	0	,	ACTION_TURN_INPUT_MODE				},
-	{ termbox.KeyCtrlW		,	0	,	ACTION_MENTION						},
-	{ termbox.KeyCtrlF		,	0	,	ACTION_LIKE_TWEET					},
-	{ termbox.KeyCtrlV		,	0	,	ACTION_RETWEET						},
-	{ termbox.KeyCtrlO		,	0	,	ACTION_OPEN_URL						},
-	{ termbox.KeyCtrlP		,	0	,	ACTION_OPEN_IMAGES					},
-
-	{ termbox.KeyCtrlZ		,	0	,	ACTION_TURN_HOME_TIMELINE_MODE		},
-	{ termbox.KeyCtrlX		,	0	,	ACTION_TURN_MENTION_VIEW_MODE		},
-	{ termbox.KeyCtrlD		,	0	,	ACTION_TURN_USER_TIMELINE_MODE		},
-	{ termbox.KeyArrowRight	,	0	,	ACTION_TURN_CONVERSATION_VIEW_MODE	},
-	{ 0						,  ':'	,	ACTION_TURN_COMMAND_MODE			}, /* TODO: need ModAlt field */
-	{ termbox.KeyCtrlQ		,	0	,	ACTION_QUIT							},
-
-	{ termbox.KeyArrowUp	,	0	,	ACTION_NEXT_TWEET					},
-	{ termbox.KeyArrowDown	,	0	,	ACTION_PREVIOUS_TWEET				},
-	{ termbox.KeyHome		,	0	,	ACTION_MOVE_TO_TOP_TWEET			},
-	{ termbox.KeyPgup		,	0	,	ACTION_MOVE_TO_TOP_TWEET			},
-	{ termbox.KeyEnd		,	0	,	ACTION_MOVE_TO_BOTTOM_TWEET			},
-	{ termbox.KeyPgdn		,	0	,	ACTION_MOVE_TO_BOTTOM_TWEET			},
-}
-
-/* home timeline action list */
-const (
-	ACTION_LOAD_PREVIOUSE_TWEETS = iota
+const ( /* home timeline action list */
+	ACTION_LOAD_PREVIOUSE_TWEETS = iota + 1
 	ACTION_LOAD_NEW_TWEETS
 )
-var homeTimelineKeybindList = []keybind {
-	{ termbox.KeySpace,	0,	ACTION_LOAD_PREVIOUSE_TWEETS	},
-	{ termbox.KeyCtrlR,	0,	ACTION_LOAD_NEW_TWEETS			},
-}
-
-/* input mode action list */
-const (
-	ACTION_MOVE_LEFT= iota
+const ( /* input mode action list */
+	ACTION_MOVE_LEFT= iota + 1
 	ACTION_MOVE_RIGHT
 	ACTION_MOVE_UP
 	ACTION_MOVE_DOWN
@@ -93,77 +60,106 @@ const (
 	ACTION_TURN_CONFIRM_MODE
 	ACTION_INSERT_NEW_LINE
 )
-var inputModeKeybindList = []keybind {
-	{ termbox.KeyArrowLeft	,	0,	ACTION_MOVE_LEFT			},
-	{ termbox.KeyArrowRight	,	0,	ACTION_MOVE_RIGHT			},
-	{ termbox.KeyArrowUp	,	0,	ACTION_MOVE_UP				},
-	{ termbox.KeyArrowDown	,	0,	ACTION_MOVE_DOWN			},
-	{ termbox.KeySpace		,	0,	ACTION_INSERT_SPACE			},
-	{ termbox.KeyEsc		,	0,	ACTION_EXIT_INPUT_MODE		},
-	{ termbox.KeyCtrlG		,	0,	ACTION_EXIT_INPUT_MODE		},
-	{ termbox.KeyBackspace	,	0,	ACTION_DELETE_RUNE			},
-	{ termbox.KeyBackspace2	,	0,	ACTION_DELETE_RUNE			},
-	{ termbox.KeyCtrlA		,	0,	ACTION_MOVE_LINE_TOP		},
-	{ termbox.KeyCtrlE		,	0,	ACTION_MOVE_LINE_BOTTOM		},
-	{ termbox.KeyCtrlJ		,	0,	ACTION_TURN_CONFIRM_MODE	},
-	{ termbox.KeyEnter		,	0,	ACTION_INSERT_NEW_LINE		},
-}
-
-/* confirm mode action list */
-const (
-	ACTION_CANCEL_SUBMIT = iota
+const ( /* confirm mode action list */
+	ACTION_CANCEL_SUBMIT = iota + 1
 	ACTION_SUBMIT_TWEET
 )
-var confirmModeKeybindList = []keybind {
-	{ termbox.KeyEsc,	0	,	ACTION_CANCEL_SUBMIT	},
-	{ termbox.KeyCtrlG,	0	,	ACTION_CANCEL_SUBMIT	},
-	{ termbox.KeyEnter,	0	,	ACTION_SUBMIT_TWEET		},
-}
-
-/* mention view mode action list */
-const (
-	ACTION_LOAD_PREVIOUSE_MENTIONS = iota
+const ( /* mention view mode action list */
+	ACTION_LOAD_PREVIOUSE_MENTIONS = iota + 1
 	ACTION_LOAD_NEW_MENTIONS
 )
-var mentionViewModeKeybindList = []keybind {
-	{ termbox.KeyEnter,	0	,	ACTION_LOAD_PREVIOUSE_MENTIONS	},
-	{ termbox.KeySpace,	0	,	ACTION_LOAD_PREVIOUSE_MENTIONS	},
-	{ termbox.KeyCtrlR,	0	,	ACTION_LOAD_NEW_MENTIONS		},
-}
-
-/* conversation mode action list */
-const (
-	ACTION_EXIT_CONVERSATION_MODE = iota
+const ( /* conversation mode action list */
+	ACTION_EXIT_CONVERSATION_MODE = iota + 1
 )
-var conversationModeKeybindList = []keybind {
-	{ termbox.KeyArrowLeft,		0	,	ACTION_EXIT_CONVERSATION_MODE	},
-}
-
-
-/* user timeline mode action list */
-const (
-	ACTION_LOAD_PREVIOUSE_USER_TWEETS = iota
+const ( /* user timeline mode action list */
+	ACTION_LOAD_PREVIOUSE_USER_TWEETS = iota + 1
 	ACTION_LOAD_NEW_USER_TWEETS
 )
-var userTimelineModeKeybindList = []keybind {
-	{ termbox.KeyEnter,	0,	ACTION_LOAD_PREVIOUSE_USER_TWEETS	},
-	{ termbox.KeySpace,	0,	ACTION_LOAD_PREVIOUSE_USER_TWEETS	},
-	{ termbox.KeyCtrlR,	0,	ACTION_LOAD_NEW_USER_TWEETS			},
-}
-
-/* list mode actin list */
-const (
-	ACTION_LOAD_PREVIOUSE_LIST = iota
+const ( /* list mode actin list */
+	ACTION_LOAD_PREVIOUSE_LIST = iota + 1
 	ACTION_LOAD_NEW_LIST
 )
+
+const NO_MOD    = 0
+const NO_KEY    = 0
+const NO_CH     = 0
+const NO_ACTION = 0
+
+
+/* keybind list */
+var commonKeybindList = []keybind {
+	{ NO_MOD		, termbox.KeyCtrlS		, NO_CH	, ACTION_TURN_INPUT_MODE			},
+	{ NO_MOD		, termbox.KeyCtrlW		, NO_CH	, ACTION_MENTION					},
+	{ NO_MOD		, termbox.KeyCtrlF		, NO_CH	, ACTION_LIKE_TWEET					},
+	{ NO_MOD		, termbox.KeyCtrlV		, NO_CH	, ACTION_RETWEET					},
+	{ NO_MOD		, termbox.KeyCtrlO		, NO_CH	, ACTION_OPEN_URL					},
+	{ NO_MOD		, termbox.KeyCtrlP		, NO_CH	, ACTION_OPEN_IMAGES				},
+
+	{ NO_MOD		, termbox.KeyCtrlZ		, NO_CH	, ACTION_TURN_HOME_TIMELINE_MODE	},
+	{ NO_MOD		, termbox.KeyCtrlX		, NO_CH	, ACTION_TURN_MENTION_VIEW_MODE		},
+	{ NO_MOD		, termbox.KeyCtrlD		, NO_CH	, ACTION_TURN_USER_TIMELINE_MODE	},
+	{ NO_MOD		, termbox.KeyArrowRight	, NO_CH	, ACTION_TURN_CONVERSATION_VIEW_MODE},
+	{ termbox.ModAlt, NO_KEY				, 'x'	, ACTION_TURN_COMMAND_MODE			}, /* TODO: need ModAlt field */
+	{ NO_MOD		, termbox.KeyCtrlQ		, NO_CH	, ACTION_QUIT						},
+
+	{ NO_MOD		, termbox.KeyArrowUp	, NO_CH	, ACTION_NEXT_TWEET					},
+	{ NO_MOD		, termbox.KeyArrowDown	, NO_CH	, ACTION_PREVIOUS_TWEET				},
+	{ NO_MOD		, termbox.KeyHome		, NO_CH	, ACTION_MOVE_TO_TOP_TWEET			},
+	{ NO_MOD		, termbox.KeyPgup		, NO_CH	, ACTION_MOVE_TO_TOP_TWEET			},
+	{ NO_MOD		, termbox.KeyEnd		, NO_CH	, ACTION_MOVE_TO_BOTTOM_TWEET		},
+	{ NO_MOD		, termbox.KeyPgdn		, NO_CH	, ACTION_MOVE_TO_BOTTOM_TWEET		},
+}
+
+var homeTimelineKeybindList = []keybind {
+	{ NO_MOD		, termbox.KeySpace		, NO_CH , ACTION_LOAD_PREVIOUSE_TWEETS		},
+	{ NO_MOD		, termbox.KeyCtrlR		, NO_CH , ACTION_LOAD_NEW_TWEETS			},
+}
+
+var inputModeKeybindList = []keybind {
+	{ NO_MOD		, termbox.KeyArrowLeft	, NO_CH , ACTION_MOVE_LEFT					},
+	{ NO_MOD		, termbox.KeyArrowRight	, NO_CH , ACTION_MOVE_RIGHT					},
+	{ NO_MOD		, termbox.KeyArrowUp	, NO_CH , ACTION_MOVE_UP					},
+	{ NO_MOD		, termbox.KeyArrowDown	, NO_CH , ACTION_MOVE_DOWN					},
+	{ NO_MOD		, termbox.KeySpace		, NO_CH , ACTION_INSERT_SPACE				},
+	{ NO_MOD		, termbox.KeyEsc		, NO_CH , ACTION_EXIT_INPUT_MODE			},
+	{ NO_MOD		, termbox.KeyCtrlG		, NO_CH , ACTION_EXIT_INPUT_MODE			},
+	{ NO_MOD		, termbox.KeyBackspace	, NO_CH , ACTION_DELETE_RUNE				},
+	{ NO_MOD		, termbox.KeyBackspace2	, NO_CH , ACTION_DELETE_RUNE				},
+	{ NO_MOD		, termbox.KeyCtrlA		, NO_CH , ACTION_MOVE_LINE_TOP				},
+	{ NO_MOD		, termbox.KeyCtrlE		, NO_CH , ACTION_MOVE_LINE_BOTTOM			},
+	{ NO_MOD		, termbox.KeyCtrlJ		, NO_CH , ACTION_TURN_CONFIRM_MODE			},
+	{ NO_MOD		, termbox.KeyEnter		, NO_CH , ACTION_INSERT_NEW_LINE			},
+}
+
+var confirmModeKeybindList = []keybind {
+	{ NO_MOD		, termbox.KeyEsc		, NO_CH , ACTION_CANCEL_SUBMIT				},
+	{ NO_MOD		, termbox.KeyCtrlG		, NO_CH , ACTION_CANCEL_SUBMIT				},
+	{ NO_MOD		, termbox.KeyEnter		, NO_CH , ACTION_SUBMIT_TWEET				},
+}
+
+var mentionViewModeKeybindList = []keybind {
+	{ NO_MOD		, termbox.KeyEnter		, NO_CH , ACTION_LOAD_PREVIOUSE_MENTIONS	},
+	{ NO_MOD		, termbox.KeySpace		, NO_CH , ACTION_LOAD_PREVIOUSE_MENTIONS	},
+	{ NO_MOD		, termbox.KeyCtrlR		, NO_CH , ACTION_LOAD_NEW_MENTIONS			},
+}
+
+var conversationModeKeybindList = []keybind {
+	{ NO_MOD		, termbox.KeyArrowLeft	, NO_CH , ACTION_EXIT_CONVERSATION_MODE		},
+}
+
+var userTimelineModeKeybindList = []keybind {
+	{ NO_MOD		, termbox.KeyEnter		, NO_CH , ACTION_LOAD_PREVIOUSE_USER_TWEETS	},
+	{ NO_MOD		, termbox.KeySpace		, NO_CH , ACTION_LOAD_PREVIOUSE_USER_TWEETS	},
+	{ NO_MOD		, termbox.KeyCtrlR		, NO_CH , ACTION_LOAD_NEW_USER_TWEETS		},
+}
+
 var listModeKeybindList = []keybind {
-	{ termbox.KeyEnter,	0,	ACTION_LOAD_PREVIOUSE_LIST	},
-	{ termbox.KeySpace,	0,	ACTION_LOAD_PREVIOUSE_LIST	},
-	{ termbox.KeyCtrlR,	0,	ACTION_LOAD_NEW_LIST		},
+	{ NO_MOD		, termbox.KeyEnter		, NO_CH , ACTION_LOAD_PREVIOUSE_LIST		},
+	{ NO_MOD		, termbox.KeySpace		, NO_CH , ACTION_LOAD_PREVIOUSE_LIST		},
+	{ NO_MOD		, termbox.KeyCtrlR		, NO_CH , ACTION_LOAD_NEW_LIST				},
 }
 
 func (view *view) handleAction(ev termbox.Event, mode KeybindMode) (Action) {
-	var action Action = NO_ACTION
 	var keybindList []keybind
 	switch mode {
 		case KEYBIND_MODE_COMMON :
@@ -183,19 +179,13 @@ func (view *view) handleAction(ev termbox.Event, mode KeybindMode) (Action) {
 		case KEYBIND_MODE_LIST_VIEW :
 			keybindList = listModeKeybindList
 	}
-	for i := 0; i<len(keybindList); i++ { /* TODO: To handle ModAlt */
-		if ev.Key == 0 {	/* kind of CTRL			*/
-			if keybindList[i].Ch == ev.Ch {
-				action = keybindList[i].Action
-				break
-			}
-		} else {			/* kind of Charactor	*/
-			if keybindList[i].Key == ev.Key {
-				action = keybindList[i].Action
-				break
-			}
+	for i := 0; i<len(keybindList); i++ {
+		if (ev.Mod == keybindList[i].Mod) &&
+		   (ev.Key == keybindList[i].Key) &&
+		   (ev.Ch  == keybindList[i].Ch) {
+				return keybindList[i].Action
 		}
 	}
-	return action
+	return NO_ACTION
 }
 
