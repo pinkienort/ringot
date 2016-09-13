@@ -222,20 +222,12 @@ func (view *view) handleEvent(ev termbox.Event) {
 
 func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 	cursorPositionTweet := tv.tweets[tv.cursorPosition]
-	switch view.handleAction(ev, MODE_COMMON) {
-		case ACTION_NEXT_TWEET :
-			tv.cursorDown()
+	switch view.handleAction(ev, KEYBIND_MODE_COMMON) {
 		case ACTION_PREVIOUS_TWEET :
+			tv.cursorDown()
+		case ACTION_NEXT_TWEET :
 			tv.cursorUp()
-		case ACTION_PAGE_DOWN :
-			for i := 0; i < 5; i++ { /* TODO: 画面内のツイート数に従って．*/
-				tv.cursorDown()		 /*		  実装する必要あり			  */
-			}
-		case ACTION_PAGE_UP :
-			for i := 0; i < 5; i++ { /* TODO: pageDownと同様の問題		  */
-				tv.cursorUp()
-			}
-		case ACTION_GO_INPUT_MODE :
+		case ACTION_TURN_INPUT_MODE :
 			view.turnInputMode()
 		case ACTION_LIKE_TWEET :
 			if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
@@ -256,11 +248,11 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 				cursorPositionTweet.setRetweeted(true)
 				go retweet(cursorPositionTweet.Content.Id)
 			}
-		case ACTION_GO_COMMAND_MODE :
+		case ACTION_TURN_COMMAND_MODE :
 			view.turnCommandMode()
 		case ACTION_QUIT :
 			view.quit = true
-		case ACTION_GO_CONVERSATION_VIEW_MODE :
+		case ACTION_TURN_CONVERSATION_VIEW_MODE :
 			if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark ||
 				cursorPositionTweet.Content == nil {
 				return
@@ -279,7 +271,7 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 				return
 			}
 			view.turnReplyMode(cursorPositionTweet)
-		case ACTION_GO_USER_TIMELINE_MODE :
+		case ACTION_TURN_USER_TIMELINE_MODE :
 			if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
 				return
 			} else if view.usertimelineview.loading.isLocking() {
@@ -290,9 +282,9 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 				t = t.RetweetedStatus
 			}
 			view.turnUserTimelineMode(t.User.ScreenName)
-		case ACTION_GO_HOME_TIMELINE_MODE :
+		case ACTION_TURN_HOME_TIMELINE_MODE :
 			view.turnHomeTimelineMode()
-		case ACTION_GO_MENTION_VIEW_MODE :
+		case ACTION_TURN_MENTION_VIEW_MODE :
 			view.turnMentionviewMode()
 		case ACTION_OPEN_URL :
 			if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
@@ -308,8 +300,10 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 			for _, media := range cursorPositionTweet.Content.ExtendedEntities.Media {
 				go openMedia(media.Media_url_https)
 			}
-		case ACTION_GO_TOP_TWEET :
+		case ACTION_MOVE_TO_TOP_TWEET :
 			tv.cursorMoveToTop()
+		case ACTION_MOVE_TO_BOTTOM_TWEET :
+			tv.cursorMoveToBottom()
 		// case termbox.KeyEnd, termbox.KeyPgdn:
 		// 	tv.cursorMoveToBottom()
 		default:
@@ -327,7 +321,7 @@ func (view *view) handleHometimelineMode(ev termbox.Event) {
 		tweets[view.timelineview.cursorPosition]
 
 
-	switch view.handleAction(ev, MODE_HOME_TIMELINE)  { // go conversation view
+	switch view.handleAction(ev, KEYBIND_MODE_HOME_TIMELINE)  { // go conversation view
 		case ACTION_LOAD_PREVIOUSE_TWEETS :
 			if cursorPositionTweet.ReloadMark {
 				if !view.timelineview.isEmpty() {
@@ -350,7 +344,7 @@ func (view *view) handleHometimelineMode(ev termbox.Event) {
 }
 
 func (view *view) handleInputMode(ev termbox.Event) {
-	switch view.handleAction(ev, MODE_INPUT) {
+	switch view.handleAction(ev, KEYBIND_MODE_INPUT) {
 		case ACTION_MOVE_LEFT :
 			view.buffer.cursorMoveBackward()
 		case ACTION_MOVE_RIGHT :
@@ -371,7 +365,7 @@ func (view *view) handleInputMode(ev termbox.Event) {
 			view.buffer.cursorMoveToLineTop()
 		case ACTION_MOVE_LINE_BOTTOM :
 			view.buffer.cursorMoveToLineBottom()
-		case ACTION_GO_CONFIRM_MODE :
+		case ACTION_TURN_CONFIRM_MODE :
 			if len(view.buffer.content) != 0 {
 				view.turnConfirmMode()
 			}
@@ -397,7 +391,7 @@ func (view *view) handleConfirmMode(ev termbox.Event) {
 	if view.buffer.confirmLock.isLocking() {
 		return
 	}
-	switch view.handleAction(ev, MODE_CONFIRM) {
+	switch view.handleAction(ev, KEYBIND_MODE_CONFIRM) {
 		case ACTION_CANCEL_SUBMIT :
 			view.buffer.inputing = true
 			view.buffer.confirm = false
@@ -411,7 +405,7 @@ func (view *view) handleConfirmMode(ev termbox.Event) {
 }
 
 func (view *view) handleMentionviewMode(ev termbox.Event) {
-	switch view.handleAction(ev, MODE_MENTION_VIEW) {
+	switch view.handleAction(ev, KEYBIND_MODE_MENTION_VIEW) {
 		case ACTION_LOAD_PREVIOUSE_MENTIONS :
 			if !view.mentionview.isEmpty() {
 				go view.mentionview.loadIntervalTweet(view.mentionview.
@@ -478,7 +472,7 @@ func (view *view) executeCommand(input string) {
 }
 
 func (view *view) handleConversationMode(ev termbox.Event) {
-	switch view.handleAction(ev, MODE_CONVERSATION) {
+	switch view.handleAction(ev, KEYBIND_MODE_CONVERSATION) {
 		case ACTION_EXIT_CONVERSATION_MODE :
 			view.exitConversationviewMode()
 		default:
@@ -490,7 +484,7 @@ func (view *view) handleConversationMode(ev termbox.Event) {
 func (view *view) handleUserTimelineMode(ev termbox.Event) {
 	cursorPositionTweet := view.usertimelineview.
 		tweets[view.usertimelineview.cursorPosition]
-	switch view.handleAction(ev, MODE_USER_TIMELINE) {
+	switch view.handleAction(ev, KEYBIND_MODE_USER_TIMELINE) {
 		case ACTION_LOAD_PREVIOUSE_USER_TWEETS :
 			if cursorPositionTweet.ReloadMark && view.usertimelineview.cursorPosition >= 1 {
 				go view.usertimelineview.loadIntervalTweet(view.usertimelineview.
@@ -515,7 +509,7 @@ func (view *view) handleUserTimelineMode(ev termbox.Event) {
 func (view *view) handleListMode(ev termbox.Event) {
 	cursorPositionTweet := view.listview.
 		tweets[view.listview.cursorPosition]
-	switch view.handleAction(ev, MODE_LIST_VIEW) {
+	switch view.handleAction(ev, KEYBIND_MODE_LIST_VIEW) {
 		case ACTION_LOAD_PREVIOUSE_LIST :
 			if cursorPositionTweet.ReloadMark && view.listview.cursorPosition >= 1 {
 				go view.listview.loadIntervalTweet(view.listview.

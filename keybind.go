@@ -2,16 +2,16 @@ package main
 
 import termbox "github.com/nsf/termbox-go"
 
-type Mode uint8
+type KeybindMode uint8
 const (
-	MODE_COMMON = iota
-	MODE_CONVERSATION
-	MODE_HOME_TIMELINE
-	MODE_INPUT
-	MODE_CONFIRM
-	MODE_MENTION_VIEW
-	MODE_USER_TIMELINE
-	MODE_LIST_VIEW
+	KEYBIND_MODE_COMMON = iota
+	KEYBIND_MODE_CONVERSATION
+	KEYBIND_MODE_HOME_TIMELINE
+	KEYBIND_MODE_INPUT
+	KEYBIND_MODE_CONFIRM
+	KEYBIND_MODE_MENTION_VIEW
+	KEYBIND_MODE_USER_TIMELINE
+	KEYBIND_MODE_LIST_VIEW
 )
 
 type Action uint8
@@ -34,36 +34,39 @@ const (
 	ACTION_PREVIOUS_TWEET
 	ACTION_PAGE_DOWN
 	ACTION_PAGE_UP
-	ACTION_GO_TOP_TWEET
-	ACTION_GO_INPUT_MODE
-	ACTION_GO_COMMAND_MODE
-	ACTION_GO_HOME_TIMELINE_MODE
-	ACTION_GO_CONVERSATION_VIEW_MODE
-	ACTION_GO_MENTION_VIEW_MODE
-	ACTION_GO_USER_TIMELINE_MODE
+	ACTION_MOVE_TO_TOP_TWEET
+	ACTION_MOVE_TO_BOTTOM_TWEET
+	ACTION_TURN_INPUT_MODE
+	ACTION_TURN_COMMAND_MODE
+	ACTION_TURN_HOME_TIMELINE_MODE
+	ACTION_TURN_CONVERSATION_VIEW_MODE
+	ACTION_TURN_MENTION_VIEW_MODE
+	ACTION_TURN_USER_TIMELINE_MODE
 	ACTION_QUIT
 	ACTION_OPEN_URL
 	ACTION_SHOW_HELP
 )
 var commonKeybindList = []keybind {
-	{	0				,	'l'	,	ACTION_LIKE_TWEET					},
-	{	0				,	'r'	,	ACTION_MENTION						},
-	{	0				,	't'	,	ACTION_RETWEET						},
-	{	0				,	'o'	,	ACTION_OPEN_URL						},
-	{	0				,	'p'	,	ACTION_OPEN_IMAGES					},
-	{	0				,	'j'	,	ACTION_NEXT_TWEET					},
-	{	0				,	'k'	,	ACTION_PREVIOUS_TWEET				},
-	{	0				,	'd'	,	ACTION_PAGE_DOWN					},
-	{	0				,	'u'	,	ACTION_PAGE_UP						},
-	{	0				,	'?'	,	ACTION_SHOW_HELP					},
-	{	0				,	'.'	,	ACTION_GO_TOP_TWEET					},
-	{	0				,	'n'	,	ACTION_GO_INPUT_MODE				},
-	{	0				,	':'	,	ACTION_GO_COMMAND_MODE				},
-	{	termbox.KeyCtrlZ,	0	,	ACTION_GO_HOME_TIMELINE_MODE		},
-	{	termbox.KeyCtrlC,	0	,	ACTION_GO_CONVERSATION_VIEW_MODE	},
-	{	termbox.KeyCtrlX,	0	,	ACTION_GO_MENTION_VIEW_MODE			},
-	{	termbox.KeyCtrlD,	0	,	ACTION_GO_USER_TIMELINE_MODE		},
-	{	termbox.KeyCtrlQ,	0	,	ACTION_QUIT							},
+	{ termbox.KeyCtrlS		,	0	,	ACTION_TURN_INPUT_MODE				},
+	{ termbox.KeyCtrlW		,	0	,	ACTION_MENTION						},
+	{ termbox.KeyCtrlF		,	0	,	ACTION_LIKE_TWEET					},
+	{ termbox.KeyCtrlV		,	0	,	ACTION_RETWEET						},
+	{ termbox.KeyCtrlO		,	0	,	ACTION_OPEN_URL						},
+	{ termbox.KeyCtrlP		,	0	,	ACTION_OPEN_IMAGES					},
+
+	{ termbox.KeyCtrlZ		,	0	,	ACTION_TURN_HOME_TIMELINE_MODE		},
+	{ termbox.KeyCtrlX		,	0	,	ACTION_TURN_MENTION_VIEW_MODE		},
+	{ termbox.KeyCtrlD		,	0	,	ACTION_TURN_USER_TIMELINE_MODE		},
+	{ termbox.KeyArrowRight	,	0	,	ACTION_TURN_CONVERSATION_VIEW_MODE	},
+	{ 0						,  ':'	,	ACTION_TURN_COMMAND_MODE			}, /* TODO: need ModAlt field */
+	{ termbox.KeyCtrlQ		,	0	,	ACTION_QUIT							},
+
+	{ termbox.KeyArrowUp	,	0	,	ACTION_NEXT_TWEET					},
+	{ termbox.KeyArrowDown	,	0	,	ACTION_PREVIOUS_TWEET				},
+	{ termbox.KeyHome		,	0	,	ACTION_MOVE_TO_TOP_TWEET			},
+	{ termbox.KeyPgup		,	0	,	ACTION_MOVE_TO_TOP_TWEET			},
+	{ termbox.KeyEnd		,	0	,	ACTION_MOVE_TO_BOTTOM_TWEET			},
+	{ termbox.KeyPgdn		,	0	,	ACTION_MOVE_TO_BOTTOM_TWEET			},
 }
 
 /* home timeline action list */
@@ -87,23 +90,23 @@ const (
 	ACTION_DELETE_RUNE
 	ACTION_MOVE_LINE_TOP
 	ACTION_MOVE_LINE_BOTTOM
-	ACTION_GO_CONFIRM_MODE
+	ACTION_TURN_CONFIRM_MODE
 	ACTION_INSERT_NEW_LINE
 )
 var inputModeKeybindList = []keybind {
-	{ termbox.KeyArrowLeft	,	0,	ACTION_MOVE_LEFT	},
-	{ termbox.KeyArrowRight	,	0,	ACTION_MOVE_RIGHT	},
-	{ termbox.KeyArrowUp	,	0,	ACTION_MOVE_UP		},
-	{ termbox.KeyArrowDown	,	0,	ACTION_MOVE_DOWN	},
-	{ termbox.KeySpace		,	0,	ACTION_INSERT_SPACE	},
-	{ termbox.KeyEsc		,	0,	ACTION_EXIT_INPUT_MODE	},
-	{ termbox.KeyCtrlG		,	0,	ACTION_EXIT_INPUT_MODE	},
-	{ termbox.KeyBackspace	,	0,	ACTION_DELETE_RUNE		},
-	{ termbox.KeyBackspace2	,	0,	ACTION_DELETE_RUNE		},
-	{ termbox.KeyCtrlA		,	0,	ACTION_MOVE_LINE_TOP	},
-	{ termbox.KeyCtrlE		,	0,	ACTION_MOVE_LINE_BOTTOM	},
-	{ termbox.KeyCtrlJ		,	0,	ACTION_GO_CONFIRM_MODE	},
-	{ termbox.KeyEnter		,	0,	ACTION_INSERT_NEW_LINE	},
+	{ termbox.KeyArrowLeft	,	0,	ACTION_MOVE_LEFT			},
+	{ termbox.KeyArrowRight	,	0,	ACTION_MOVE_RIGHT			},
+	{ termbox.KeyArrowUp	,	0,	ACTION_MOVE_UP				},
+	{ termbox.KeyArrowDown	,	0,	ACTION_MOVE_DOWN			},
+	{ termbox.KeySpace		,	0,	ACTION_INSERT_SPACE			},
+	{ termbox.KeyEsc		,	0,	ACTION_EXIT_INPUT_MODE		},
+	{ termbox.KeyCtrlG		,	0,	ACTION_EXIT_INPUT_MODE		},
+	{ termbox.KeyBackspace	,	0,	ACTION_DELETE_RUNE			},
+	{ termbox.KeyBackspace2	,	0,	ACTION_DELETE_RUNE			},
+	{ termbox.KeyCtrlA		,	0,	ACTION_MOVE_LINE_TOP		},
+	{ termbox.KeyCtrlE		,	0,	ACTION_MOVE_LINE_BOTTOM		},
+	{ termbox.KeyCtrlJ		,	0,	ACTION_TURN_CONFIRM_MODE	},
+	{ termbox.KeyEnter		,	0,	ACTION_INSERT_NEW_LINE		},
 }
 
 /* confirm mode action list */
@@ -134,7 +137,6 @@ const (
 )
 var conversationModeKeybindList = []keybind {
 	{ termbox.KeyArrowLeft,		0	,	ACTION_EXIT_CONVERSATION_MODE	},
-	{ termbox.KeyArrowRight,	0	,	NO_ACTION						},
 }
 
 
@@ -160,28 +162,28 @@ var listModeKeybindList = []keybind {
 	{ termbox.KeyCtrlR,	0,	ACTION_LOAD_NEW_LIST		},
 }
 
-func (view *view) handleAction(ev termbox.Event, mode Mode) (Action) {
+func (view *view) handleAction(ev termbox.Event, mode KeybindMode) (Action) {
 	var action Action = NO_ACTION
 	var keybindList []keybind
 	switch mode {
-		case MODE_COMMON :
+		case KEYBIND_MODE_COMMON :
 			keybindList = commonKeybindList
-		case MODE_CONVERSATION :
+		case KEYBIND_MODE_CONVERSATION :
 			keybindList = conversationModeKeybindList
-		case MODE_HOME_TIMELINE :
+		case KEYBIND_MODE_HOME_TIMELINE :
 			keybindList = homeTimelineKeybindList
-		case MODE_INPUT :
+		case KEYBIND_MODE_INPUT :
 			keybindList = inputModeKeybindList
-		case MODE_CONFIRM :
+		case KEYBIND_MODE_CONFIRM :
 			keybindList = confirmModeKeybindList
-		case MODE_MENTION_VIEW :
+		case KEYBIND_MODE_MENTION_VIEW :
 			keybindList = mentionViewModeKeybindList
-		case MODE_USER_TIMELINE :
+		case KEYBIND_MODE_USER_TIMELINE :
 			keybindList = userTimelineModeKeybindList
-		case MODE_LIST_VIEW :
+		case KEYBIND_MODE_LIST_VIEW :
 			keybindList = listModeKeybindList
-		}
-	for i := 0; i<len(keybindList); i++ {
+	}
+	for i := 0; i<len(keybindList); i++ { /* TODO: To handle ModAlt */
 		if ev.Key == 0 {	/* kind of CTRL			*/
 			if keybindList[i].Ch == ev.Ch {
 				action = keybindList[i].Action
