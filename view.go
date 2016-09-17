@@ -308,15 +308,6 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		tv.cursorMoveToTop()
 	case ACTION_MOVE_TO_BOTTOM_TWEET:
 		tv.cursorMoveToBottom()
-	// case termbox.KeyEnd, termbox.KeyPgdn:
-	// 	tv.cursorMoveToBottom()
-	default:
-		switch ev.Ch {
-		case 'x':
-			if ev.Mod&termbox.ModAlt != 0 {
-				view.turnCommandMode()
-			}
-		}
 	}
 }
 
