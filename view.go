@@ -222,14 +222,37 @@ func (view *view) handleEvent(ev termbox.Event) {
 
 func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 	cursorPositionTweet := tv.tweets[tv.cursorPosition]
-	switch ev.Key {
-	case termbox.KeyCtrlQ:
-		view.quit = true
-	case termbox.KeyArrowUp:
-		tv.cursorUp()
-	case termbox.KeyArrowDown:
+	switch view.handleAction(ev, KEYBIND_MODE_COMMON) {
+	case ACTION_PREVIOUS_TWEET:
 		tv.cursorDown()
-	case termbox.KeyArrowRight:
+	case ACTION_NEXT_TWEET:
+		tv.cursorUp()
+	case ACTION_TURN_INPUT_MODE:
+		view.turnInputMode()
+	case ACTION_LIKE_TWEET:
+		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
+			return
+		}
+		if !cursorPositionTweet.isFavorited() {
+			cursorPositionTweet.setFavorited(true)
+			go favoriteTweet(cursorPositionTweet.Content.Id)
+		} else {
+			cursorPositionTweet.setFavorited(false)
+			go unfavoriteTweet(cursorPositionTweet.Content.Id)
+		}
+	case ACTION_RETWEET:
+		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
+			return
+		}
+		if !cursorPositionTweet.isRetweeted() {
+			cursorPositionTweet.setRetweeted(true)
+			go retweet(cursorPositionTweet.Content.Id)
+		}
+	case ACTION_TURN_COMMAND_MODE:
+		view.turnCommandMode()
+	case ACTION_QUIT:
+		view.quit = true
+	case ACTION_TURN_CONVERSATION_VIEW_MODE:
 		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark ||
 			cursorPositionTweet.Content == nil {
 			return
@@ -243,14 +266,12 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		}
 		view.conversationview.setTopTweet(tweetstatus{Content: t})
 		view.turnConversationviewMode()
-	case termbox.KeyCtrlS:
-		view.turnInputMode()
-	case termbox.KeyCtrlW:
+	case ACTION_MENTION:
 		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
 			return
 		}
 		view.turnReplyMode(cursorPositionTweet)
-	case termbox.KeyCtrlD:
+	case ACTION_TURN_USER_TIMELINE_MODE:
 		if cursorPositionTweet.Empty || cursorPositionTweet.ReloadMark {
 			return
 		} else if view.usertimelineview.loading.isLocking() {
@@ -261,37 +282,18 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 			t = t.RetweetedStatus
 		}
 		view.turnUserTimelineMode(t.User.ScreenName)
-	case termbox.KeyCtrlZ:
+	case ACTION_TURN_HOME_TIMELINE_MODE:
 		view.turnHomeTimelineMode()
-	case termbox.KeyCtrlX:
+	case ACTION_TURN_MENTION_VIEW_MODE:
 		view.turnMentionviewMode()
-	case termbox.KeyCtrlF:
-		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
-			return
-		}
-		if !cursorPositionTweet.isFavorited() {
-			cursorPositionTweet.setFavorited(true)
-			go favoriteTweet(cursorPositionTweet.Content.Id)
-		} else {
-			cursorPositionTweet.setFavorited(false)
-			go unfavoriteTweet(cursorPositionTweet.Content.Id)
-		}
-	case termbox.KeyCtrlV:
-		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
-			return
-		}
-		if !cursorPositionTweet.isRetweeted() {
-			cursorPositionTweet.setRetweeted(true)
-			go retweet(cursorPositionTweet.Content.Id)
-		}
-	case termbox.KeyCtrlO:
+	case ACTION_OPEN_URL:
 		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
 			return
 		}
 		for _, url := range cursorPositionTweet.Content.Entities.Urls {
 			go openCommand(url.Expanded_url)
 		}
-	case termbox.KeyCtrlP:
+	case ACTION_OPEN_IMAGES:
 		if cursorPositionTweet.ReloadMark || cursorPositionTweet.Empty {
 			return
 		}
@@ -302,10 +304,12 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		if len(urls) > 0 {
 			go openMedia(urls)
 		}
-	case termbox.KeyHome, termbox.KeyPgup:
+	case ACTION_MOVE_TO_TOP_TWEET:
 		tv.cursorMoveToTop()
-	case termbox.KeyEnd, termbox.KeyPgdn:
+	case ACTION_MOVE_TO_BOTTOM_TWEET:
 		tv.cursorMoveToBottom()
+	// case termbox.KeyEnd, termbox.KeyPgdn:
+	// 	tv.cursorMoveToBottom()
 	default:
 		switch ev.Ch {
 		case 'x':
@@ -319,8 +323,9 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 func (view *view) handleHometimelineMode(ev termbox.Event) {
 	cursorPositionTweet := view.timelineview.
 		tweets[view.timelineview.cursorPosition]
-	switch ev.Key {
-	case termbox.KeyEnter, termbox.KeySpace:
+
+	switch view.handleAction(ev, KEYBIND_MODE_HOME_TIMELINE) { // go conversation view
+	case ACTION_LOAD_PREVIOUSE_TWEETS:
 		if cursorPositionTweet.ReloadMark {
 			if !view.timelineview.isEmpty() {
 				go view.timelineview.loadIntervalTweet(view.timelineview.tweets[view.
@@ -328,16 +333,13 @@ func (view *view) handleHometimelineMode(ev termbox.Event) {
 			} else {
 				go view.timelineview.loadTweet(0)
 			}
-
 		}
-	case termbox.KeyCtrlR:
+	case ACTION_LOAD_NEW_TWEETS:
 		if !view.timelineview.isEmpty() {
 			go view.timelineview.loadTweet(view.timelineview.tweets[0].Content.Id)
 		} else {
 			go view.timelineview.loadTweet(0)
 		}
-	case termbox.KeyCtrlZ:
-		// Do nothing
 	default:
 		view.handleCommonEvent(ev, view.timelineview.tweetview)
 	}
@@ -345,36 +347,32 @@ func (view *view) handleHometimelineMode(ev termbox.Event) {
 }
 
 func (view *view) handleInputMode(ev termbox.Event) {
-	switch ev.Key {
-	case termbox.KeyArrowLeft:
+	switch view.handleAction(ev, KEYBIND_MODE_INPUT) {
+	case ACTION_MOVE_LEFT:
 		view.buffer.cursorMoveBackward()
-	case termbox.KeyArrowRight:
+	case ACTION_MOVE_RIGHT:
 		view.buffer.cursorMoveForward()
-	case termbox.KeyArrowUp:
+	case ACTION_MOVE_UP:
 		view.buffer.cursorMoveUp()
-	case termbox.KeyArrowDown:
+	case ACTION_MOVE_DOWN:
 		view.buffer.cursorMoveDown()
-	case termbox.KeySpace:
+	case ACTION_INSERT_SPACE:
 		view.buffer.insertRune(' ')
-	case termbox.KeyEsc, termbox.KeyCtrlG:
+	case ACTION_EXIT_INPUT_MODE:
 		view.exitInputMode()
 		view.refreshAll()
 		return
-	case termbox.KeyBackspace, termbox.KeyBackspace2:
+	case ACTION_DELETE_RUNE:
 		view.buffer.deleteRuneBackward()
-	case termbox.KeyCtrlA:
+	case ACTION_MOVE_LINE_TOP:
 		view.buffer.cursorMoveToLineTop()
-	case termbox.KeyCtrlE:
+	case ACTION_MOVE_LINE_BOTTOM:
 		view.buffer.cursorMoveToLineBottom()
-	case termbox.KeyCtrlW:
-		view.buffer.cutToClipboard()
-	case termbox.KeyCtrlY:
-		view.buffer.pasteFromClipboard()
-	case termbox.KeyCtrlJ:
+	case ACTION_TURN_CONFIRM_MODE:
 		if len(view.buffer.content) != 0 {
 			view.turnConfirmMode()
 		}
-	case termbox.KeyEnter:
+	case ACTION_INSERT_NEW_LINE:
 		if view.buffer.commanding {
 			view.executeCommand(string(view.buffer.content))
 			view.buffer.updateCursorPosition()
@@ -396,13 +394,13 @@ func (view *view) handleConfirmMode(ev termbox.Event) {
 	if view.buffer.confirmLock.isLocking() {
 		return
 	}
-	switch ev.Key {
-	case termbox.KeyEsc, termbox.KeyCtrlG:
+	switch view.handleAction(ev, KEYBIND_MODE_CONFIRM) {
+	case ACTION_CANCEL_SUBMIT:
 		view.buffer.inputing = true
 		view.buffer.confirm = false
 		view.buffer.cursorMoveToLineBottom()
 		view.buffer.updateCursorPosition()
-	case termbox.KeyEnter:
+	case ACTION_SUBMIT_TWEET:
 		go view.buffer.process(string(view.buffer.content))
 		view.exitConfirmMode()
 	}
@@ -410,26 +408,20 @@ func (view *view) handleConfirmMode(ev termbox.Event) {
 }
 
 func (view *view) handleMentionviewMode(ev termbox.Event) {
-	cursorPositionTweet := view.mentionview.
-		tweets[view.mentionview.cursorPosition]
-	switch ev.Key {
-	case termbox.KeyEnter, termbox.KeySpace:
-		if cursorPositionTweet.ReloadMark {
-			if !view.mentionview.isEmpty() {
-				go view.mentionview.loadIntervalTweet(view.mentionview.
-					tweets[view.mentionview.cursorPosition-1].Content.Id)
-			} else {
-				go view.mentionview.loadTweet(0)
-			}
+	switch view.handleAction(ev, KEYBIND_MODE_MENTION_VIEW) {
+	case ACTION_LOAD_PREVIOUSE_MENTIONS:
+		if !view.mentionview.isEmpty() {
+			go view.mentionview.loadIntervalTweet(view.mentionview.
+				tweets[view.mentionview.cursorPosition-1].Content.Id)
+		} else {
+			go view.mentionview.loadTweet(0)
 		}
-	case termbox.KeyCtrlR:
+	case ACTION_LOAD_NEW_MENTIONS:
 		if !view.mentionview.isEmpty() {
 			go view.mentionview.loadTweet(view.mentionview.tweets[0].Content.Id)
 		} else {
 			go view.mentionview.loadTweet(0)
 		}
-	case termbox.KeyCtrlX:
-		// Do nothing
 	default:
 		view.handleCommonEvent(ev, view.mentionview.tweetview)
 	}
@@ -483,15 +475,9 @@ func (view *view) executeCommand(input string) {
 }
 
 func (view *view) handleConversationMode(ev termbox.Event) {
-	switch ev.Key {
-	case termbox.KeyArrowLeft:
+	switch view.handleAction(ev, KEYBIND_MODE_CONVERSATION) {
+	case ACTION_EXIT_CONVERSATION_MODE:
 		view.exitConversationviewMode()
-	case termbox.KeyArrowRight:
-		// Do nothing
-	case termbox.KeyHome, termbox.KeyPgup:
-		// Disable
-	case termbox.KeyEnd, termbox.KeyPgdn:
-		// Disable
 	default:
 		view.handleCommonEvent(ev, view.conversationview.tweetview)
 	}
@@ -501,13 +487,13 @@ func (view *view) handleConversationMode(ev termbox.Event) {
 func (view *view) handleUserTimelineMode(ev termbox.Event) {
 	cursorPositionTweet := view.usertimelineview.
 		tweets[view.usertimelineview.cursorPosition]
-	switch ev.Key {
-	case termbox.KeyEnter, termbox.KeySpace:
+	switch view.handleAction(ev, KEYBIND_MODE_USER_TIMELINE) {
+	case ACTION_LOAD_PREVIOUSE_USER_TWEETS:
 		if cursorPositionTweet.ReloadMark && view.usertimelineview.cursorPosition >= 1 {
 			go view.usertimelineview.loadIntervalTweet(view.usertimelineview.
 				tweets[view.usertimelineview.cursorPosition-1].Content.Id)
 		}
-	case termbox.KeyCtrlR:
+	case ACTION_LOAD_NEW_USER_TWEETS:
 		if !view.usertimelineview.loading.isLocking() {
 			if !view.usertimelineview.isEmpty() {
 				go view.usertimelineview.loadTweet(view.
@@ -526,13 +512,13 @@ func (view *view) handleUserTimelineMode(ev termbox.Event) {
 func (view *view) handleListMode(ev termbox.Event) {
 	cursorPositionTweet := view.listview.
 		tweets[view.listview.cursorPosition]
-	switch ev.Key {
-	case termbox.KeyEnter, termbox.KeySpace:
+	switch view.handleAction(ev, KEYBIND_MODE_LIST_VIEW) {
+	case ACTION_LOAD_PREVIOUSE_LIST:
 		if cursorPositionTweet.ReloadMark && view.listview.cursorPosition >= 1 {
 			go view.listview.loadIntervalTweet(view.listview.
 				tweets[view.listview.cursorPosition-1].Content.Id)
 		}
-	case termbox.KeyCtrlR:
+	case ACTION_LOAD_NEW_LIST:
 		go view.listview.loadTweet(view.
 			listview.tweets[0].Content.Id)
 	default:
