@@ -77,6 +77,8 @@ const ( /* input mode action list */
 	ACTION_MOVE_LINE_BOTTOM
 	ACTION_TURN_CONFIRM_MODE
 	ACTION_INSERT_NEW_LINE
+	ACTION_TEXT_CUT
+	ACTION_TEXT_PASTE
 )
 const ( /* confirm mode action list */
 	ACTION_CANCEL_SUBMIT = iota + 1
@@ -146,6 +148,8 @@ var inputModeKeybindList = []keybind{
 	{NO_MOD, termbox.KeyCtrlE, NO_CH, ACTION_MOVE_LINE_BOTTOM},
 	{NO_MOD, termbox.KeyCtrlJ, NO_CH, ACTION_TURN_CONFIRM_MODE},
 	{NO_MOD, termbox.KeyEnter, NO_CH, ACTION_INSERT_NEW_LINE},
+	{NO_MOD, termbox.KeyCtrlW, NO_CH, ACTION_TEXT_CUT},
+	{NO_MOD, termbox.KeyCtrlY, NO_CH, ACTION_TEXT_PASTE},
 }
 
 var confirmModeKeybindList = []keybind{

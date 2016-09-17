@@ -364,6 +364,10 @@ func (view *view) handleInputMode(ev termbox.Event) {
 		return
 	case ACTION_DELETE_RUNE:
 		view.buffer.deleteRuneBackward()
+	case ACTION_TEXT_CUT:
+		view.buffer.cutToClipboard()
+	case ACTION_TEXT_PASTE:
+		view.buffer.pasteFromClipboard()
 	case ACTION_MOVE_LINE_TOP:
 		view.buffer.cursorMoveToLineTop()
 	case ACTION_MOVE_LINE_BOTTOM:
