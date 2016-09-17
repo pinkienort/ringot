@@ -98,6 +98,23 @@ func (view *view) Loop() {
 			evCh <- termbox.PollEvent()
 		}
 	}()
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		counter := 0
+		for {
+			select {
+			case <-ticker.C:
+				if counter > 0 {
+					counter--
+					if counter == 0 {
+						stateCh <- ""
+					}
+				}
+			case v := <-stateClearCh:
+				counter = v
+			}
+		}
+	}()
 	for {
 		select {
 		case ev := <-evCh:
@@ -464,6 +481,8 @@ func (view *view) executeCommand(input string) {
 			ln = resplited[1]
 		}
 		view.turnListModeWithName(un, ln)
+	case "open":
+		view.turnConversationviewMode()
 	default:
 		view.buffer.setState("Commnad Err")
 	}

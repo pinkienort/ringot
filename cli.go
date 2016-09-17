@@ -39,12 +39,13 @@ func main() {
 }
 
 var (
-	api        *anaconda.TwitterApi
-	stateCh    chan string
-	tweetmap   *TweetMap
-	termWidth  int
-	termHeight int
-	user       UserConfig
+	api          *anaconda.TwitterApi
+	stateCh      chan string
+	stateClearCh chan int
+	tweetmap     *TweetMap
+	termWidth    int
+	termHeight   int
+	user         UserConfig
 )
 
 type cli struct {
@@ -71,6 +72,7 @@ func (cl *cli) run() {
 
 	view := newView()
 	stateCh = make(chan string)
+	stateClearCh = make(chan int, 2)
 	tweetmap = newTweetMap()
 
 	if err := termbox.Init(); err != nil {

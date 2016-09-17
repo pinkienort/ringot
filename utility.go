@@ -340,7 +340,12 @@ func retweet(id int64) {
 }
 
 func changeBufferState(state string) {
-	go func() { stateCh <- state }()
+	go func() {
+		stateCh <- state
+		if state != "" {
+			stateClearCh <- 30
+		}
+	}()
 }
 
 func getTermSize() (int, int) {
