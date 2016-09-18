@@ -157,7 +157,12 @@ func (bf *buffer) drawCommandInputField() {
 			x += runewidth.StringWidth(t)
 		}
 	} else {
-		drawText(bf.state, x, height-1, ColorWhite, ColorBackground)
+		// When state contains "Err" message, draw it by Red
+		sc := ColorWhite
+		if strings.Contains(bf.state, "Err") {
+			sc = ColorRed
+		}
+		drawText(bf.state, x, height-1, sc, ColorBackground)
 		x += runewidth.StringWidth(bf.state)
 	}
 	fillLine(x, height-1, ColorBackground)
