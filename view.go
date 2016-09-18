@@ -477,7 +477,7 @@ func (view *view) executeCommand(input string) {
 	view.exitInputMode()
 	splited := strings.SplitN(input, " ", 2)
 	if len(splited) < 2 {
-		view.buffer.setState("Commnad Err")
+		changeBufferState("Commnad Err")
 		return
 	}
 	cmd := splited[0]
@@ -525,7 +525,7 @@ func (view *view) executeCommand(input string) {
 			}
 		}()
 	default:
-		view.buffer.setState("Commnad Err")
+		changeBufferState("Commnad Err")
 	}
 }
 
