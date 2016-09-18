@@ -47,7 +47,9 @@ const (
 // DisableSequences
 var (
 	xtermOffSequences = []string{
+		// Ctrl + Arrow Keys
 		"\x1b[1;5A", "\x1b[1;5B", "\x1b[1;5C", "\x1b[1;5D",
+		// Shift + Arrow Left, Right
 		"\x1b[1;2C", "\x1b[1;2D",
 	}
 )
