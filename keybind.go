@@ -29,6 +29,7 @@ const (
 	KEYBIND_MODE_CONFIRM
 	KEYBIND_MODE_MENTION_VIEW
 	KEYBIND_MODE_USER_TIMELINE
+	KEYBIND_MODE_USER_FAVORITE
 	KEYBIND_MODE_LIST_VIEW
 )
 
@@ -174,6 +175,12 @@ var userTimelineModeKeybindList = []keybind{
 	{NO_MOD, termbox.KeyCtrlR, NO_CH, ACTION_LOAD_NEW_USER_TWEETS},
 }
 
+var favoriteModeKeybindList = []keybind{
+	{NO_MOD, termbox.KeyEnter, NO_CH, ACTION_LOAD_PREVIOUSE_USER_TWEETS},
+	{NO_MOD, termbox.KeySpace, NO_CH, ACTION_LOAD_PREVIOUSE_USER_TWEETS},
+	{NO_MOD, termbox.KeyCtrlR, NO_CH, ACTION_LOAD_NEW_USER_TWEETS},
+}
+
 var listModeKeybindList = []keybind{
 	{NO_MOD, termbox.KeyEnter, NO_CH, ACTION_LOAD_PREVIOUSE_LIST},
 	{NO_MOD, termbox.KeySpace, NO_CH, ACTION_LOAD_PREVIOUSE_LIST},
@@ -197,6 +204,8 @@ func (view *view) handleAction(ev termbox.Event, mode KeybindMode) Action {
 		keybindList = mentionViewModeKeybindList
 	case KEYBIND_MODE_USER_TIMELINE:
 		keybindList = userTimelineModeKeybindList
+	case KEYBIND_MODE_USER_FAVORITE:
+		keybindList = favoriteModeKeybindList
 	case KEYBIND_MODE_LIST_VIEW:
 		keybindList = listModeKeybindList
 	}

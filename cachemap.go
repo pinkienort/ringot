@@ -19,6 +19,7 @@ package main
 
 import (
 	"github.com/ChimeraCoder/anaconda"
+	"strings"
 	"sync"
 )
 
@@ -53,5 +54,31 @@ func (tm *TweetMap) get(id int64) (*anaconda.Tweet, bool) {
 	tm.mutex.RLock()
 	defer tm.mutex.RUnlock()
 	val, ok := tm.content[id]
+	return val, ok
+}
+
+// ProfileMap caches loaded user profile
+type ProfileMap struct {
+	content map[string]*anaconda.User
+	mutex   *sync.RWMutex
+}
+
+func newProfileMap() *ProfileMap {
+	return &ProfileMap{
+		content: make(map[string]*anaconda.User, 300),
+		mutex:   new(sync.RWMutex),
+	}
+}
+
+func (pm *ProfileMap) registerProfile(user *anaconda.User) {
+	pm.mutex.Lock()
+	defer pm.mutex.Unlock()
+	pm.content[strings.ToLower(user.ScreenName)] = user
+}
+
+func (pm *ProfileMap) get(screenName string) (*anaconda.User, bool) {
+	pm.mutex.RLock()
+	defer pm.mutex.RUnlock()
+	val, ok := pm.content[screenName]
 	return val, ok
 }

@@ -28,8 +28,9 @@ import (
 
 type usertimelineview struct {
 	*tweetview
-	screenName string
-	cache      map[string][]tweetstatus
+	screenName  string
+	userProfile *anaconda.User
+	cache       map[string][]tweetstatus
 
 	loading             lock
 	loadNewTweetCh      chan []anaconda.Tweet
@@ -57,6 +58,12 @@ func (uv *usertimelineview) setUserScreenName(name string) {
 			uv.tweets = []tweetstatus{tweetstatus{ReloadMark: true}}
 		}
 		uv.screenName = name
+		u, ok := profilemap.get(uv.screenName)
+		if ok {
+			uv.userProfile = u
+		} else {
+			uv.userProfile = nil
+		}
 	}
 }
 
@@ -67,6 +74,17 @@ func (uv *usertimelineview) loadTweet(sinceID int64) {
 	uv.loading.lock()
 	defer uv.loading.unlock()
 	changeBufferState("Loading...")
+
+	if _, ok := profilemap.get(uv.screenName); !ok {
+		u, err := api.GetUsersShow(uv.screenName, nil)
+		if err == nil {
+			profilemap.registerProfile(&u)
+		} else {
+			changeBufferState("Err:User profile Loading")
+			return
+		}
+	}
+
 	val := url.Values{}
 	val.Add("count", strconv.Itoa(20))
 	val.Add("screen_name", uv.screenName)
@@ -105,6 +123,12 @@ func (uv *usertimelineview) loadIntervalTweet(maxID int64) {
 }
 
 func (uv *usertimelineview) addNewTweet(tss []tweetstatus) {
+	if uv.userProfile == nil {
+		u, ok := profilemap.get(uv.screenName)
+		if ok {
+			uv.userProfile = u
+		}
+	}
 	if len(tss) == 0 {
 		return
 	}
@@ -116,6 +140,12 @@ func (uv *usertimelineview) addNewTweet(tss []tweetstatus) {
 }
 
 func (uv *usertimelineview) addIntervalTweet(tss []tweetstatus) {
+	if uv.userProfile == nil {
+		u, ok := profilemap.get(uv.screenName)
+		if ok {
+			uv.userProfile = u
+		}
+	}
 	if len(tss) == 0 {
 		return
 	}
@@ -134,7 +164,11 @@ func (uv *usertimelineview) draw() {
 	}
 
 	width, _ := getTermSize()
-	user := tweets[0].Content.User
+	user := uv.userProfile
+	if user == nil {
+		drawText("Couldn't load User profile", 0, 0, ColorWhite, ColorBackground)
+		return
+	}
 	lines := strings.Split(runewidth.Wrap(user.Description, width), "\n")
 
 	// slide for Users profile space

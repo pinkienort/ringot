@@ -43,6 +43,7 @@ var (
 	stateCh      chan string
 	stateClearCh chan int
 	tweetmap     *TweetMap
+	profilemap   *ProfileMap
 	termWidth    int
 	termHeight   int
 	user         UserConfig
@@ -74,6 +75,7 @@ func (cl *cli) run() {
 	stateCh = make(chan string)
 	stateClearCh = make(chan int, 2)
 	tweetmap = newTweetMap()
+	profilemap = newProfileMap()
 
 	if err := termbox.Init(); err != nil {
 		fmt.Println("Failed to initialize termbox")

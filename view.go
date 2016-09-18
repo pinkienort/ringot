@@ -30,6 +30,7 @@ type view struct {
 	mentionview      *mentionview
 	conversationview *conversationview
 	usertimelineview *usertimelineview
+	favoriteview     *favoriteview
 	listview         *listview
 	buffer           *buffer
 
@@ -46,6 +47,7 @@ func newView() *view {
 	view.mentionview = newMentionview()
 	view.conversationview = newConversationview()
 	view.usertimelineview = newUsertimelineview()
+	view.favoriteview = newFavoriteview()
 	view.listview = newListview()
 	view.buffer = newBuffer()
 	return view
@@ -61,6 +63,7 @@ const (
 	mention
 	conversation
 	list
+	favorite
 )
 
 func (view *view) Init() {
@@ -155,6 +158,15 @@ func (view *view) Loop() {
 			tweetmap.registerTweets(tw)
 			view.usertimelineview.addIntervalTweet(wrapTweets(tw))
 			view.refreshAll()
+		case tw := <-view.favoriteview.loadNewTweetCh:
+			tweetmap.registerTweets(tw)
+			t := wrapTweets(tw)
+			view.favoriteview.addNewTweet(t)
+			view.refreshAll()
+		case tw := <-view.favoriteview.loadIntervalTweetCh:
+			tweetmap.registerTweets(tw)
+			view.favoriteview.addIntervalTweet(wrapTweets(tw))
+			view.refreshAll()
 		case tw := <-view.listview.loadNewTweetCh:
 			tweetmap.registerTweets(tw)
 			t := wrapTweets(tw)
@@ -193,6 +205,9 @@ func (view *view) refreshAll() {
 	case usertimeline:
 		view.buffer.linePosInfo = view.usertimelineview.cursorPosition + 1
 		view.usertimelineview.draw()
+	case favorite:
+		view.buffer.linePosInfo = view.favoriteview.cursorPosition + 1
+		view.favoriteview.draw()
 	case list:
 		view.buffer.linePosInfo = view.listview.cursorPosition + 1
 		view.listview.draw()
@@ -211,6 +226,7 @@ func (view *view) resetScrollAll() {
 	view.mentionview.resetScroll()
 	view.conversationview.resetScroll()
 	view.usertimelineview.resetScroll()
+	view.favoriteview.resetScroll()
 	view.listview.resetScroll()
 }
 
@@ -232,6 +248,8 @@ func (view *view) handleEvent(ev termbox.Event) {
 		view.handleConversationMode(ev)
 	case usertimeline:
 		view.handleUserTimelineMode(ev)
+	case favorite:
+		view.handleFavoriteMode(ev)
 	case list:
 		view.handleListMode(ev)
 	}
@@ -481,8 +499,8 @@ func (view *view) executeCommand(input string) {
 			ln = resplited[1]
 		}
 		view.turnListModeWithName(un, ln)
-	case "open":
-		view.turnConversationviewMode()
+	case "favorite", "fav":
+		view.turnFavoriteviewMode(args)
 	default:
 		view.buffer.setState("Commnad Err")
 	}
@@ -518,6 +536,31 @@ func (view *view) handleUserTimelineMode(ev termbox.Event) {
 		}
 	default:
 		view.handleCommonEvent(ev, view.usertimelineview.tweetview)
+	}
+
+	view.refreshAll()
+}
+
+func (view *view) handleFavoriteMode(ev termbox.Event) {
+	cursorPositionTweet := view.favoriteview.
+		tweets[view.favoriteview.cursorPosition]
+	switch view.handleAction(ev, KEYBIND_MODE_USER_FAVORITE) {
+	case ACTION_LOAD_PREVIOUSE_USER_TWEETS:
+		if cursorPositionTweet.ReloadMark && view.favoriteview.cursorPosition >= 1 {
+			go view.favoriteview.loadIntervalTweet(view.favoriteview.
+				tweets[view.favoriteview.cursorPosition-1].Content.Id)
+		}
+	case ACTION_LOAD_NEW_USER_TWEETS:
+		if !view.favoriteview.loading.isLocking() {
+			if !view.favoriteview.isEmpty() {
+				go view.favoriteview.loadTweet(view.
+					favoriteview.tweets[0].Content.Id)
+			} else {
+				go view.favoriteview.loadTweet(0)
+			}
+		}
+	default:
+		view.handleCommonEvent(ev, view.favoriteview.tweetview)
 	}
 
 	view.refreshAll()
@@ -594,7 +637,21 @@ func (view *view) turnUserTimelineMode(screenName string) {
 	}
 
 }
+func (view *view) turnFavoriteviewMode(screenName string) {
+	view.favoriteview.setUserScreenName(screenName)
+	view.setViewMode(favorite)
+	view.buffer.setModeStr(favorite)
+	view.favoriteview.cursorPosition = 0
+	view.favoriteview.scroll = 0
+	if view.favoriteview.isEmpty() {
+		go view.favoriteview.loadTweet(0)
+	} else if view.favoriteview.tweets[0].Content != nil {
+		go view.
+			favoriteview.loadTweet(view.
+			favoriteview.tweets[0].Content.Id)
+	}
 
+}
 func (view *view) turnListModeWithName(owner, name string) {
 	view.listview.setListName(owner, name)
 	view.setViewMode(list)
@@ -687,5 +744,8 @@ func (view *view) exitConversationviewMode() {
 	case list:
 		view.setViewMode(list)
 		view.buffer.setModeStr(list)
+	case favorite:
+		view.setViewMode(favorite)
+		view.buffer.setModeStr(favorite)
 	}
 }

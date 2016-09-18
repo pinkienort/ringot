@@ -460,6 +460,8 @@ func (bf *buffer) setModeStr(m viewmode) {
 		s = "*UserTimeline View*"
 	case list:
 		s = "*List View*"
+	case favorite:
+		s = "*Favorite View*"
 	}
 	bf.mode = s
 }
