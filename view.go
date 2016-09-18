@@ -482,6 +482,15 @@ func (view *view) executeCommand(input string) {
 	}
 	cmd := splited[0]
 	args := strings.TrimSuffix(strings.TrimPrefix(splited[1], " "), " ")
+	// replace args when it is special keywords
+	if args == "this" || args == "." {
+		vm := view.getCurrentViewMode()
+		if vm == usertimeline && view.usertimelineview.screenName != "" {
+			args = view.usertimelineview.screenName
+		} else if vm == favorite && view.favoriteview.screenName != "" {
+			args = view.favoriteview.screenName
+		}
+	}
 	switch cmd {
 	case "user":
 		view.turnUserTimelineMode(args)
