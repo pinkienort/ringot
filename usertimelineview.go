@@ -192,6 +192,11 @@ func (uv *usertimelineview) draw() {
 		drawText(text, x, y, ColorWhite, ColorGray2)
 		x += runewidth.StringWidth(text)
 	}
+	if user.Following {
+		text = "[Following]"
+		drawText(text, x, y, ColorWhite, ColorGray2)
+		x += runewidth.StringWidth(text)
+	}
 	y++
 
 	fillLine(0, y, ColorGray2)
