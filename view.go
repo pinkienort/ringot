@@ -512,17 +512,21 @@ func (view *view) executeCommand(input string) {
 		view.turnFavoriteviewMode(args)
 	case "follow":
 		go func() {
-			_, err := api.FollowUser(args)
+			u, err := api.FollowUser(args)
 			if err != nil {
 				changeBufferState("Err: Couldn't follow specified user")
+				return
 			}
+			changeBufferState("Succeed! following @" + u.ScreenName)
 		}()
 	case "unfollow":
 		go func() {
-			_, err := api.UnfollowUser(args)
+			u, err := api.UnfollowUser(args)
 			if err != nil {
 				changeBufferState("Err: Couldn't unfollow specified user")
+				return
 			}
+			changeBufferState("Succeed! unfollowing @" + u.ScreenName)
 		}()
 	default:
 		changeBufferState("Commnad Err")
