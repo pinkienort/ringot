@@ -55,7 +55,7 @@ Twitter Client on terminal
 |:follow *screen_name*|Follow a user|
 |:unfollow *screen_name*|Unfollow a user|
 |:set_footer *word*|Set footer for Tweet Edit|
-|:unset_footer *word*|Unset footer|
+|:unset_footer |Unset footer|
 
 ## Installation
 Dependencies:  
