@@ -96,5 +96,5 @@ limitations under the License.
 ```
 
 Ringot is using many libraries, list is [doc/library_list.md](doc/library_list.md)  
-Library's license information are available in [doc/license_notice.txt](doc/license_notice.txt)  
+Library's license information are available in [doc/license_notice.txt](doc/license_notice.txt) or copyright file(Debian copyright-format)  
 Some libraries are modified by tSU-RooT  
