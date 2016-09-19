@@ -476,12 +476,12 @@ func (view *view) sendNewTweet(status string) {
 func (view *view) executeCommand(input string) {
 	view.exitInputMode()
 	splited := strings.SplitN(input, " ", 2)
-	if len(splited) < 2 {
-		changeBufferState("Commnad Err")
-		return
-	}
+	noArg := len(splited) < 2
 	cmd := splited[0]
-	args := strings.TrimSuffix(strings.TrimPrefix(splited[1], " "), " ")
+	args := ""
+	if !noArg {
+		args = strings.TrimSuffix(strings.TrimPrefix(splited[1], " "), " ")
+	}
 	// replace args when it is special keywords
 	if args == "this" || args == "." {
 		vm := view.getCurrentViewMode()
@@ -493,8 +493,16 @@ func (view *view) executeCommand(input string) {
 	}
 	switch cmd {
 	case "user":
+		if noArg {
+			changeBufferState("Err! user command needs argument")
+			return
+		}
 		view.turnUserTimelineMode(args)
 	case "list":
+		if noArg {
+			changeBufferState("Err! list command needs argument")
+			return
+		}
 		resplited := strings.Split(args, "/")
 		var un, ln string
 		switch len(resplited) {
@@ -509,8 +517,16 @@ func (view *view) executeCommand(input string) {
 		}
 		view.turnListModeWithName(un, ln)
 	case "favorite", "fav":
+		if noArg {
+			changeBufferState("Err! fav command needs argument")
+			return
+		}
 		view.turnFavoriteviewMode(args)
 	case "follow":
+		if noArg {
+			changeBufferState("Err! follow command needs argument")
+			return
+		}
 		go func() {
 			u, err := api.FollowUser(args)
 			if err != nil {
@@ -520,6 +536,10 @@ func (view *view) executeCommand(input string) {
 			changeBufferState("Succeed! following @" + u.ScreenName)
 		}()
 	case "unfollow":
+		if noArg {
+			changeBufferState("Err! unfollow command needs argument")
+			return
+		}
 		go func() {
 			u, err := api.UnfollowUser(args)
 			if err != nil {
