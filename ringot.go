@@ -25,7 +25,7 @@ import (
 // These const variables are used by printVersion
 const (
 	ApplicationName = "Ringot"
-	Version         = 0.2
+	Version         = 0.3
 	CopyrightYear   = "2016"
 	Author          = "tSU-RooT"
 	NoWarranty      = "Ringot comes with ABSOLUTELY NO WARRANTY"
