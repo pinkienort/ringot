@@ -343,6 +343,37 @@ func (view *view) handleCommonEvent(ev termbox.Event, tv *tweetview) {
 		tv.cursorMoveToTop()
 	case ACTION_MOVE_TO_BOTTOM_TWEET:
 		tv.cursorMoveToBottom()
+	case ACTION_PAGE_UP:
+		psc := tv.scroll
+		_, h := getTermSize()
+		for {
+			pcp := tv.cursorPosition
+			tv.cursorUp()
+			if tv.scroll != psc {
+				tv.scroll -= (h - 2 - tv.scrollOffset)
+				tv.scroll += tv.tweets[tv.cursorPosition].countLines()
+				if tv.scroll < 0 {
+					tv.scroll = 0
+				}
+				break
+			} else if pcp == tv.cursorPosition {
+				break
+			}
+		}
+	case ACTION_PAGE_DOWN:
+		psc := tv.scroll
+		_, h := getTermSize()
+		for {
+			pcp := tv.cursorPosition
+			tv.cursorDown()
+			if tv.scroll != psc {
+				tv.scroll += (h - 2 - tv.scrollOffset)
+				tv.scroll -= tv.tweets[tv.cursorPosition].countLines()
+				break
+			} else if pcp == tv.cursorPosition {
+				break
+			}
+		}
 	}
 }
 

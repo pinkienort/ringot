@@ -125,9 +125,9 @@ var commonKeybindList = []keybind{
 	{NO_MOD, termbox.KeyArrowUp, NO_CH, ACTION_NEXT_TWEET},
 	{NO_MOD, termbox.KeyArrowDown, NO_CH, ACTION_PREVIOUS_TWEET},
 	{NO_MOD, termbox.KeyHome, NO_CH, ACTION_MOVE_TO_TOP_TWEET},
-	{NO_MOD, termbox.KeyPgup, NO_CH, ACTION_MOVE_TO_TOP_TWEET},
 	{NO_MOD, termbox.KeyEnd, NO_CH, ACTION_MOVE_TO_BOTTOM_TWEET},
-	{NO_MOD, termbox.KeyPgdn, NO_CH, ACTION_MOVE_TO_BOTTOM_TWEET},
+	{NO_MOD, termbox.KeyPgup, NO_CH, ACTION_PAGE_UP},
+	{NO_MOD, termbox.KeyPgdn, NO_CH, ACTION_PAGE_DOWN},
 }
 
 var homeTimelineKeybindList = []keybind{
