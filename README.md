@@ -25,13 +25,17 @@ Twitter Client on terminal
 |<kbd>Ctrl-v</kbd>|Retweet a tweet|
 |<kbd>Ctrl-o</kbd>|Open a URL with browser|
 |<kbd>Ctrl-p</kbd>|Download a picture & Open it|
+|<kbd>Home</kbd>|Move cursor to Top|
+|<kbd>End</kbd> |Move cursor to Bottom|
+|<kbd>PgUp</kbd>|Page Up|
+|<kbd>PgDn</kbd>|Page Down|
 
 ### Mode
 |Key|Command|
 |:---|:---|
-|<kbd>Ctrl-z</kbd>|Switch to the Home Time-Line view |
+|<kbd>Ctrl-z</kbd>|Switch to the Home Timeline view |
 |<kbd>Ctrl-x</kbd>|Switch to the Mention view |
-|<kbd>Ctrl-d</kbd>|Switch to the User Time-line view |
+|<kbd>Ctrl-d</kbd>|Switch to the User Timeline view |
 |<kbd>→</kbd>|Show Tweet's conversation |
 |<kbd>Alt-x</kbd>|Switch to Command Mode |
 |<kbd>Ctrl-q</kbd>|Quit from this application |
@@ -40,12 +44,18 @@ Twitter Client on terminal
 |Key|Command|
 |:---|:---|
 |<kbd>Ctrl-j, Ctrl-Enter</kbd>|Send a tweet |
+|<kbd>Ctrl-g</kbd>|Universal cancel button |
 
 ### Command
 |Command|Operation|
 |:---|:---|
-|:user *screen_name*|Open a User Time-Line |
+|:user *screen_name*|Open a User Timeline |
 |:list *list_name*|Open a Twitter List |
+|:fav *screen_name*|Open a User favorite Timeline |
+|:follow *screen_name*|Follow a user|
+|:unfollow *screen_name*|Unfollow a user|
+|:set_footer *word*|Set footer for Tweet Edit|
+|:unset_footer *word*|Unset footer|
 
 ## Installation
 Dependencies:  
@@ -56,7 +66,8 @@ $ go get github.com/tSU-RooT/ringot
 ```
 
 ### Just want the binary?
-Download from releases page.
+Download from releases page.  
+Add binary into your $PATH  
 
 ## Pull Requests
 Bug reports and pull requests are welcome on GitHub
