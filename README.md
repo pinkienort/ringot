@@ -69,6 +69,16 @@ $ go get github.com/tSU-RooT/ringot
 Download from releases page.  
 Add binary into your $PATH  
 
+### Debian Systems
+
+amd64
+```bash
+$ wget https://github.com/tSU-RooT/ringot/releases/download/v0.3/ringot_0.3_amd64.deb
+$ sudo dpkg -i ringot_0.3_amd64.deb
+$ ringot
+```
+
+
 ## Pull Requests
 Bug reports and pull requests are welcome on GitHub
 
