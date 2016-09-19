@@ -131,6 +131,7 @@ var commonKeybindList = []keybind{
 }
 
 var homeTimelineKeybindList = []keybind{
+	{NO_MOD, termbox.KeyEnter, NO_CH, ACTION_LOAD_PREVIOUSE_MENTIONS},
 	{NO_MOD, termbox.KeySpace, NO_CH, ACTION_LOAD_PREVIOUSE_TWEETS},
 	{NO_MOD, termbox.KeyCtrlR, NO_CH, ACTION_LOAD_NEW_TWEETS},
 }
