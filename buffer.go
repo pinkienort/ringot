@@ -45,6 +45,7 @@ type buffer struct {
 
 	linePosInfo int
 	clipboard   []byte
+	footer      string
 }
 
 func newBuffer() *buffer {

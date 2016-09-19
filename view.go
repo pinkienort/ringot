@@ -548,6 +548,14 @@ func (view *view) executeCommand(input string) {
 			}
 			changeBufferState("Succeed! unfollowing @" + u.ScreenName)
 		}()
+	case "set_footer":
+		if noArg {
+			changeBufferState("Err! set_footer command needs argument")
+			return
+		}
+		view.buffer.footer = args
+	case "unset_footer":
+		view.buffer.footer = ""
 	default:
 		changeBufferState("Commnad Err")
 	}
@@ -714,6 +722,11 @@ func (view *view) turnListModeWithName(owner, name string) {
 func (view *view) turnInputMode() {
 	view.buffer.inputing = true
 	view.buffer.clear()
+	// Set footer
+	if view.buffer.footer != "" {
+		// insert a SPACE before footer
+		view.buffer.setContent(" " + view.buffer.footer)
+	}
 	view.buffer.cursorMoveToLineTop()
 	view.buffer.updateCursorPosition()
 	view.buffer.process = view.sendNewTweet
