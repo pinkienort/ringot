@@ -19,6 +19,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/ChimeraCoder/anaconda"
 	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
@@ -257,10 +258,12 @@ const (
 	tempDir = "ringot"
 )
 
-func downloadMedia(url string, filefullpath string, wg *sync.WaitGroup) {
+func downloadMedia(url string, filefullpath string, wg *sync.WaitGroup, mes chan int) {
 	defer func() {
 		if err := recover(); err != nil {
-			changeBufferState("Media Download Err")
+			mes <- -1
+		} else {
+			mes <- 1
 		}
 		wg.Done()
 	}()
@@ -296,22 +299,51 @@ func downloadMedia(url string, filefullpath string, wg *sync.WaitGroup) {
 
 func openMedia(urls []string) {
 	wg := new(sync.WaitGroup)
+	mes := make(chan int, len(urls))
 	fileps := make([]string, 0)
+	changeBufferState(fmt.Sprintf("Downloading...(0/%d)", len(urls)))
 	for _, url := range urls {
 		_, filename := path.Split(url)
 		filefullpath := filepath.Join(os.TempDir(), tempDir, filename)
 		fileps = append(fileps, filefullpath)
 		wg.Add(1)
-		go downloadMedia(url, filefullpath, wg)
+		go downloadMedia(url, filefullpath, wg, mes)
 	}
+	receiveErrors := 0
+	go func() {
+		count := 0
+		for {
+			rec := <-mes
+			if rec == -1 {
+				receiveErrors++
+				continue
+			}
+			count++
+			changeBufferState(fmt.Sprintf("Downloading...(%d/%d)", count, len(urls)))
+			if count == len(urls) {
+				break
+			}
+		}
+	}()
 	wg.Wait()
-
 	// Reverse
 	for i := len(fileps) - 1; i >= 0; i-- {
 		if _, err := os.Stat(fileps[i]); err == nil {
 			openCommand(fileps[i])
 		}
 		time.Sleep(time.Millisecond)
+	}
+
+	if receiveErrors > 0 {
+		if receiveErrors == 1 {
+			changeBufferState("Err:media downloading was failed")
+		} else if receiveErrors == len(urls) {
+			changeBufferState("Err:all of media downloading were failed")
+		} else {
+			changeBufferState("Err:some of media downloading were failed")
+		}
+	} else {
+		changeBufferState("")
 	}
 }
 
