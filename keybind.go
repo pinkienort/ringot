@@ -46,6 +46,7 @@ const ( /* common event action list */
 	ACTION_MENTION
 	ACTION_RETWEET
 	ACTION_OPEN_IMAGES
+	ACTION_OPEN_USER_PROFILE_IMAGE
 	ACTION_NEXT_TWEET
 	ACTION_PREVIOUS_TWEET
 	ACTION_PAGE_DOWN
@@ -174,6 +175,7 @@ var userTimelineModeKeybindList = []keybind{
 	{NO_MOD, termbox.KeyEnter, NO_CH, ACTION_LOAD_PREVIOUSE_USER_TWEETS},
 	{NO_MOD, termbox.KeySpace, NO_CH, ACTION_LOAD_PREVIOUSE_USER_TWEETS},
 	{NO_MOD, termbox.KeyCtrlR, NO_CH, ACTION_LOAD_NEW_USER_TWEETS},
+	{NO_MOD, termbox.KeyCtrl8, NO_CH, ACTION_OPEN_USER_PROFILE_IMAGE},
 }
 
 var favoriteModeKeybindList = []keybind{

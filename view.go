@@ -620,6 +620,11 @@ func (view *view) handleUserTimelineMode(ev termbox.Event) {
 				go view.usertimelineview.loadTweet(0)
 			}
 		}
+	case ACTION_OPEN_USER_PROFILE_IMAGE:
+		if view.usertimelineview.userProfile.ProfileImageURL != "" {
+			urls := []string{view.usertimelineview.userProfile.ProfileImageURL}
+			go openMedia(urls)
+		}
 	default:
 		view.handleCommonEvent(ev, view.usertimelineview.tweetview)
 	}
