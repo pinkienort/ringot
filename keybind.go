@@ -155,6 +155,23 @@ var inputModeKeybindList = []keybind{
 	{NO_MOD, termbox.KeyCtrlY, NO_CH, ACTION_TEXT_PASTE},
 }
 
+var commandModeKeybindList = []keybind{
+	{NO_MOD, termbox.KeyArrowLeft, NO_CH, ACTION_MOVE_LEFT},
+	{NO_MOD, termbox.KeyArrowRight, NO_CH, ACTION_MOVE_RIGHT},
+	{NO_MOD, termbox.KeyArrowUp, NO_CH, ACTION_MOVE_UP},
+	{NO_MOD, termbox.KeyArrowDown, NO_CH, ACTION_MOVE_DOWN},
+	{NO_MOD, termbox.KeySpace, NO_CH, ACTION_INSERT_SPACE},
+	{NO_MOD, termbox.KeyEsc, NO_CH, ACTION_EXIT_INPUT_MODE},
+	{NO_MOD, termbox.KeyCtrlG, NO_CH, ACTION_EXIT_INPUT_MODE},
+	{NO_MOD, termbox.KeyBackspace, NO_CH, ACTION_DELETE_RUNE},
+	{NO_MOD, termbox.KeyBackspace2, NO_CH, ACTION_DELETE_RUNE},
+	{NO_MOD, termbox.KeyCtrlA, NO_CH, ACTION_MOVE_LINE_TOP},
+	{NO_MOD, termbox.KeyCtrlE, NO_CH, ACTION_MOVE_LINE_BOTTOM},
+	{NO_MOD, termbox.KeyEnter, NO_CH, ACTION_INSERT_NEW_LINE},
+	{NO_MOD, termbox.KeyCtrlW, NO_CH, ACTION_TEXT_CUT},
+	{NO_MOD, termbox.KeyCtrlY, NO_CH, ACTION_TEXT_PASTE},
+}
+
 var confirmModeKeybindList = []keybind{
 	{NO_MOD, termbox.KeyEsc, NO_CH, ACTION_CANCEL_SUBMIT},
 	{NO_MOD, termbox.KeyCtrlG, NO_CH, ACTION_CANCEL_SUBMIT},
@@ -200,7 +217,12 @@ func (view *view) handleAction(ev termbox.Event, mode KeybindMode) Action {
 	case KEYBIND_MODE_HOME_TIMELINE:
 		keybindList = homeTimelineKeybindList
 	case KEYBIND_MODE_INPUT:
-		keybindList = inputModeKeybindList
+		if !view.buffer.commanding {
+			keybindList = inputModeKeybindList
+
+		} else {
+			keybindList = commandModeKeybindList
+		}
 	case KEYBIND_MODE_CONFIRM:
 		keybindList = confirmModeKeybindList
 	case KEYBIND_MODE_MENTION_VIEW:
