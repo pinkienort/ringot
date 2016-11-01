@@ -528,6 +528,10 @@ func (view *view) executeCommand(input string) {
 			changeBufferState("Err! user command needs argument")
 			return
 		}
+		if !isScreenNameUsableStr(args) {
+			changeBufferState("Err! invalid screen name")
+			return
+		}
 		view.turnUserTimelineMode(args)
 	case "list":
 		if noArg {
@@ -550,6 +554,10 @@ func (view *view) executeCommand(input string) {
 	case "favorite", "fav":
 		if noArg {
 			changeBufferState("Err! fav command needs argument")
+			return
+		}
+		if !isScreenNameUsableStr(args) {
+			changeBufferState("Err! invalid screen name")
 			return
 		}
 		view.turnFavoriteviewMode(args)

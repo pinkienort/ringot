@@ -159,6 +159,15 @@ func isScreenNameUsable(r rune) bool {
 	return false
 }
 
+func isScreenNameUsableStr(s string) bool {
+	for _, r := range s {
+		if !isScreenNameUsable(r) {
+			return false
+		}
+	}
+	return true
+}
+
 func fillLine(offset int, y int, bg termbox.Attribute) {
 	width, _ := getTermSize()
 	x := offset
