@@ -464,6 +464,8 @@ func (view *view) handleConfirmMode(ev termbox.Event) {
 	case ACTION_SUBMIT_TWEET:
 		go view.buffer.process(string(view.buffer.content))
 		view.exitConfirmMode()
+	default:
+		return
 	}
 	view.refreshAll()
 }
